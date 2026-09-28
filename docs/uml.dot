@@ -1,0 +1,25 @@
+digraph UML {
+    graph [rankdir=TB, bgcolor="white", pad="0.4", nodesep="0.55", ranksep="0.65", fontname="Helvetica", fontsize=24, labelloc=t, label="EduConsent — UML class diagram"];
+    node [shape=plain, fontname="Helvetica", fontsize=13];
+    edge [fontname="Helvetica", fontsize=11, color="#45576b", arrowsize=0.8];
+
+EduConsent [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10"><TR><TD BGCOLOR="#e7eef5"><FONT POINT-SIZE="12">«Solidity contract»</FONT><BR/><B>EduConsent</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+ identities: student → Identity<BR ALIGN="LEFT"/>+ dataHashes: student → DataType → bytes32<BR ALIGN="LEFT"/>+ consents: student → requester → DataType → Consent<BR ALIGN="LEFT"/>+ rewardBalance: student → uint256<BR ALIGN="LEFT"/>+ rewarded: student → requester → DataType → bool<BR ALIGN="LEFT"/></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+ register(attributesHash)<BR ALIGN="LEFT"/>+ updateIdentity(attributesHash)<BR ALIGN="LEFT"/>+ publishData(dataType, dataHash)<BR ALIGN="LEFT"/>+ grantConsent(requester, dataType, durationDays)<BR ALIGN="LEFT"/>+ revokeConsent(requester, dataType)<BR ALIGN="LEFT"/>+ hasConsent(student, requester, dataType): bool<BR ALIGN="LEFT"/>+ requestAccess(student, dataType): bool<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+Identity [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10"><TR><TD BGCOLOR="#e7eef5"><FONT POINT-SIZE="12">«struct»</FONT><BR/><B>Identity</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+ attributesHash: bytes32<BR ALIGN="LEFT"/>+ registered: bool<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+Consent [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10"><TR><TD BGCOLOR="#e7eef5"><FONT POINT-SIZE="12">«struct»</FONT><BR/><B>Consent</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+ expiresAt: uint64<BR ALIGN="LEFT"/>+ active: bool<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+DataType [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10"><TR><TD BGCOLOR="#e7eef5"><FONT POINT-SIZE="12">«enumeration»</FONT><BR/><B>DataType</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">Diploma = 0<BR ALIGN="LEFT"/>Transcript = 1<BR ALIGN="LEFT"/>Certificate = 2<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+EducationDemo [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10"><TR><TD BGCOLOR="#e7eef5"><FONT POINT-SIZE="12">«Python class»</FONT><BR/><B>EducationDemo</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+ web3, accounts, storage<BR ALIGN="LEFT"/>+ measurements, artifact, contract<BR ALIGN="LEFT"/></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+ deploy()<BR ALIGN="LEFT"/>+ send(function, sender, label)<BR ALIGN="LEFT"/>+ register(student, identity)<BR ALIGN="LEFT"/>+ publish(student, data_type, record)<BR ALIGN="LEFT"/>+ grant(student, requester, data_type, days)<BR ALIGN="LEFT"/>+ revoke(student, requester, data_type)<BR ALIGN="LEFT"/>+ access(student, requester, data_type)<BR ALIGN="LEFT"/>+ record_path(student, data_type)<BR ALIGN="LEFT"/>+ advance_time(seconds)<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+LocalJSONFiles [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10"><TR><TD BGCOLOR="#e7eef5"><FONT POINT-SIZE="12">«artifact · off-chain»</FONT><BR/><B>LocalJSONFiles</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">Identity attributes and salt<BR ALIGN="LEFT"/>Education records and salt<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+EduConsentTest [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10"><TR><TD BGCOLOR="#e7eef5"><FONT POINT-SIZE="12">«Solidity tests»</FONT><BR/><B>EduConsentTest</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">24 unit tests<BR ALIGN="LEFT"/></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+ setUp()<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+EducationIntegrationTest [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10"><TR><TD BGCOLOR="#e7eef5"><FONT POINT-SIZE="12">«Python tests»</FONT><BR/><B>EducationIntegrationTest</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">10 integration tests<BR ALIGN="LEFT"/></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+ setUp()<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+
+    EduConsent -> Identity [dir=both, arrowtail=diamond, arrowhead=none, taillabel="1", headlabel="0..*", label="stores"];
+    EduConsent -> Consent [dir=both, arrowtail=diamond, arrowhead=none, taillabel="1", headlabel="0..*", label="stores"];
+    EduConsent -> DataType [style=dashed, arrowhead=vee, label="uses"];
+    EducationDemo -> EduConsent [style=dashed, arrowhead=vee, label="deploys and calls
+via Web3 / local Hardhat"];
+    EducationDemo -> LocalJSONFiles [style=dashed, arrowhead=vee, label="reads and writes"];
+    EduConsentTest -> EduConsent [style=dashed, arrowhead=vee, label="tests"];
+    EducationIntegrationTest -> EducationDemo [style=dashed, arrowhead=vee, label="tests"];
+    { rank=same; EducationIntegrationTest; EduConsentTest; }
+    { rank=same; Identity; Consent; DataType; }
+}

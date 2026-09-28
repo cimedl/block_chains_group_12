@@ -1,0 +1,20 @@
+npm notice run educonsent@1.0.0 demo
+npm notice run .venv/bin/python scripts/demo.py
+EduConsent: fictional education-record sharing
+Local contract: 0x95401dc811bb5740090279Ba06cfA8fcF6113778
+1. Student registered; diploma saved locally; hashes stored on-chain.
+2. Before consent: DENIED (attempt logged).
+3. After one-day consent: ALLOWED.
+{
+  "student_id": "DEMO-001",
+  "degree": "BSc Computer Science",
+  "institution": "Fictional Demo University",
+  "year": 2026,
+  "salt": "6e64996195d7c5e5e682ec6b95fc10d6499f989939f2e47238a72d7ad7e1031a"
+}
+4. Student earned 10 reward points; access transferred no tokens.
+5. After revocation: DENIED (attempt logged).
+6. After expiry: DENIED (attempt logged).
+7. Re-granting the same permission did not generate extra rewards.
+Access log: [False, True, False, False]
+PASS: complete registration -> grant -> access -> revoke -> expiry workflow
