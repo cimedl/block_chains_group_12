@@ -1,0 +1,13 @@
+{
+  "name": "healthcare-p1-draft",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test solidity",
+    "test:hashes": "python3 -m unittest discover -s test -p 'test_*.py' -v",
+    "sample": "python3 scripts/hash_data.py"
+  },
+  "devDependencies": { "hardhat": "3.18.0" }
+}

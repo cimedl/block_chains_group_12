@@ -1,0 +1,11 @@
+{
+  "schema_version": "1",
+  "record_type": "Blood_Test_Panel",
+  "issued_at": "2026-09-28",
+  "issuer": "Fictional Demo Clinic",
+  "salt": "7eecc46b3a7f27ceddbcbf4b82122d4747612b7d3379e19d3de0453c348ae623",
+  "results": [
+    {"test": "Demo marker A", "value": "10", "unit": "demo units"},
+    {"test": "Demo marker B", "value": "20", "unit": "demo units"}
+  ]
+}
