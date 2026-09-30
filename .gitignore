@@ -1,0 +1,15 @@
+node_modules/
+artifacts/
+cache/
+dist/
+.venv/
+__pycache__/
+.local/
+*.zip
+
+# Local verification and private working files
+test/
+docs/
+results/
+data/
+.idea/
