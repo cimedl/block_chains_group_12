@@ -1,0 +1,7 @@
+{
+  "name": "Demo Patient",
+  "email": "patient@example.invalid",
+  "personal_id": "FAKE-PATIENT-001",
+  "date_of_birth": "2000-01-01",
+  "salt": "81c36951f8a54a6e8c39de0ac7bdb6d3c841a7e7e24f50b97293f5b86a06b8c2"
+}

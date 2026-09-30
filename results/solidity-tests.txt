@@ -1,36 +1,60 @@
-npm notice run educonsent@1.0.0 test
-npm notice run hardhat test solidity
+
+> healthcare-p1-draft@0.1.0 test
+> hardhat test solidity
+
 
 Compiled 2 Solidity files with solc 0.8.28 (evm target: cancun)
 
 Running Solidity tests
 
-  test/EduConsent.t.sol:EduConsentTest
-    ✔ testZeroRequesterRejected()
-    ✔ testZeroDaysRejected()
-    ✔ testUnregisteredCannotUpdate()
-    ✔ testUnregisteredCannotPublish()
-    ✔ testUnregisteredCannotGrant()
-    ✔ testUnknownStudentDenied()
-    ✔ testSelfConsentRejected()
-    ✔ testRewardsOnlyOncePerPermission()
-    ✔ testRevokeStopsAccess()
-    ✔ testRegistrationStoresHash()
-    ✔ testOtherStudentCannotRevokeOwnersConsent()
-    ✔ testMissingDataRejected()
-    ✔ testIdentityUpdate()
-    ✔ testGrantEnablesOnlySelectedTypeAndRequester()
-    ✔ testFuzzDuration(uint16) (runs: 256)
-    ✔ testExactExpiryIsDenied()
+  test/HealthRegistry.t.sol:HealthRegistryTest
+    ✔ testZeroAdminRejected()
+    ✔ testVerifiedPatientCanRegisterRecord()
+    ✔ testVerifiedDoctorCannotRegisterPatientRecord()
+    ✔ testVerificationEvent()
+    ✔ testUnverifiedPatientCannotRegisterRecord()
+    ✔ testUnregisteredCannotUpdateIdentity()
+    ✔ testUnknownUserRejected()
+    ✔ testUnknownUserIsNotVerified()
+    ✔ testUnknownRecordRejected()
+    ✔ testRegistrationStartsUnverified()
+    ✔ testRecordEventIncludesOwnerAndHash()
+    ✔ testPatientCannotVerifyThemselves()
+    ✔ testNoneRoleRejected()
+    ✔ testMultipleRecordsOfSameTypeHaveSeparateIds()
+    ✔ testLongRecordTypeRejected()
+    ✔ testIdentityChangeNeedsVerificationAgain()
+    ✔ testIdentityChangeDoesNotChangeAnotherUser()
+    ✔ testEmptyRecordTypeRejected()
+    ✔ testEmptyRecordHashRejected()
+    ✔ testEmptyIdentityUpdateRejected()
     ✔ testEmptyIdentityRejected()
-    ✔ testEmptyDataRejected()
-    ✔ testDuplicateRegistrationRejected()
-    ✔ testDeniedAccessEmitsAuditEvent()
-    ✔ testAllowedAccessEmitsAuditEvent()
-    ✔ testAccessDoesNotTransferRewards()
-    ✔ test366DaysRejected()
-    ✔ test365DaysAccepted()
+    ✔ testDoctorAndResearcherCanRegister()
+    ✔ testCannotVerifyUnknownUser()
+    ✔ testCannotRegisterTwiceOrChangeRole()
+    ✔ testAdminCanVerifyAndRemoveVerification()
+
+  test/ConsentReward.t.sol:ConsentRewardTest
+    ✔ testZeroManagerRejected()
+    ✔ testZeroAdminRejected()
+    ✔ testWalletCannotBeManager()
+    ✔ testUnverifiedRequesterRejected()
+    ✔ testUnverifiedPatientRejected()
+    ✔ testUnknownRequesterRejected()
+    ✔ testUnknownRecordRejected()
+    ✔ testRewardEvent()
+    ✔ testResearcherCanAlsoTriggerReward()
+    ✔ testRepeatedPermissionGivesNoMorePoints()
+    ✔ testRegistryMustBeContract()
+    ✔ testPatientCannotRewardThemselves()
+    ✔ testPatientCannotBeRequesterForReward()
+    ✔ testOnlyAdminCanSetManager()
+    ✔ testNoRewardBeforeManagerSetup()
+    ✔ testManagerCanOnlyBeSetOnce()
+    ✔ testDifferentRequesterGetsSeparateReward()
+    ✔ testDifferentRecordGetsSeparateReward()
+    ✔ testAuthorizedRewardGoesToRecordOwner()
+    ✔ testAdminCannotIssueRewardsDirectly()
 
 
-  24 passing
-
+  45 passing
