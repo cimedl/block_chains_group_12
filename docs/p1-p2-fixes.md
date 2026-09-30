@@ -12,7 +12,7 @@ events, and shared-interface style. No new token library or contract framework w
 
 | Original issue | Repair / disposition | Verification |
 | --- | --- | --- |
-| I01: compiler error | Removed P2's incompatible local interfaces and imported the shared P1 declarations; matched compiler pragma and license style. | Solidity compile and full suite pass. |
+| I01: compiler error | Removed P2's incompatible local interfaces and imported the shared P1 declarations; retained a compatible P2 pragma and used the existing project license identifier. | Solidity compile and full suite pass. |
 | I02/I03: ID and registry mismatch | Manager uses uint256 IDs and getRecord. Registry adds non-reverting recordExists for denied requests. | Real grant fields, ownership isolation, existence, and unknown-record tests. |
 | I04: reward API mismatch | Manager calls rewardConsent(recordId, requester). Duplicate=false is allowed; errors revert the whole grant. | Actual P1 reward payment, regrant without repeat payout, rollback and retry tests. |
 | I05: competing reward policies | Retained P1's implemented 10 points per first record/requester pair; documented the difference from the earlier per-category proposal. | Same-category/new-record test explicitly earns 20 total points. Team report must use this actual policy or authorize a later change. |
@@ -22,7 +22,7 @@ events, and shared-interface style. No new token library or contract framework w
 | B03: category scope | Category must exactly match immutable registry recordType at grant. | Empty/mismatched category rejected; stored category verified. |
 | B04: active duplicates | Track latest grant by record/requester. Reject duplicates while unrevoked and before expiry; replacement receives a new ID. | Active duplicate, revoke/regrant and expiry/regrant tests; old grants remain invalid. |
 | B05: request IDs | Manager allocates sequential request IDs; caller no longer supplies them. IDs are unique within a deployment, not across chain resets/deployments. | Actual recorded denial/allow logs from different wallets have distinct IDs; view consumes none. |
-| B06: audit attribution | Patient comes from requested record. Nonmatching grant produces grantId=0. Same permission evaluator drives view and transaction; ordinary denials return normally. | Exact event fields/emitter, known owner with missing grant, wrong-record actual owner, unknown record and recorded denied logs. |
+| B06: audit attribution | Patient comes from requested record. Nonmatching grant produces grantId=0. Equivalent explicit checks in view and transaction; ordinary denials return normally. | Exact event fields/emitter, known owner with missing grant, wrong-record actual owner, unknown record and recorded denied logs. |
 | B07: dependency addresses | Reject zero or wallet addresses at construction; deployment script verifies actual cross-contract addresses. | Invalid dependency cases and four deployed getter checks. |
 | D01/D05: education artifacts | Keep historical artifacts labelled; add a separate current healthcare architecture. Current deploy/helper commands need no third-party JS/Python libraries beyond Hardhat. | README and healthcare diagram align with implementation. Inherited web3 requirements are not installed for these helpers. |
 | D02/D03: commands and portability | Existing usable scripts retained; new deploy command added. Python hashing commands use python with quoted discovery pattern. | Five Python tests pass; deployment command executes. |
@@ -89,3 +89,20 @@ P3's authenticated file service, multi-user experiments, final report and presen
 still require their own implementation and evidence. A decision event does not prove
 delivery or reading; revocation cannot delete existing copies; filesystem operator trust
 and the final-check/transfer race remain part of the system's limits.
+
+## Author-style adjustment
+
+After the first fix commit (`c894c4b`), P2's original multiline signatures, constructor
+parameter names, `trueOwner`, `start`, `end`, `newConsentRecord` locals, and separate
+AccessDecision branches were restored. The shared permissionDecision helper was
+removed. Necessary interface/type/check changes remain; this is not additions-only.
+The original ^0.8.20 pragma remains compatible with the configured 0.8.28 compiler.
+Original indentation and blank-line layout were retained; trailing whitespace was
+omitted. P1's HealthRegistry still has only the four-line recordExists addition,
+its interface has one added declaration, and ConsentReward is unchanged.
+
+All 88 Solidity tests pass for the adjusted source. Latest evidence:
+[style-adjustment test output](../results/p1-p2-style/solidity-tests.txt) and
+[source hashes and run metadata](../results/p1-p2-style/validation.json).
+The earlier fixes/deployment logs remain evidence for their earlier source revision;
+Python helpers and deployment script were unchanged by this adjustment.
