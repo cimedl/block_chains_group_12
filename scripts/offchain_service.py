@@ -63,7 +63,7 @@ def deliver_record(
 
 # Test
 if __name__ == "__main__":
-    print("Testing Simplified Delivery Service...\n")
+    print("Testing\n")
 
     # Create a test doctor
     doctor_wallet = Account.create()

@@ -18,8 +18,8 @@ def run_encryption():
     with open(input_path, "r", encoding="utf-8") as f:
         plaintext_data = f.read()
 
-    # Generate or load a symmetric key (used for decryption)
-    # To ensure the same key can be used for decryption across runs, generate and save it locally if it does not already exist.
+    # Generate or load a symmetric key, used for decryption
+    # To ensure the same key can be used for decryption, generate and save it locally if it does not already exist.
     if os.path.exists(key_path):
         with open(key_path, "rb") as kf:
             key = kf.read()
@@ -42,7 +42,7 @@ def run_encryption():
     sha256_hash = hashlib.sha256(encrypted_bytes).hexdigest()
     onchain_record_hash = "0x" + sha256_hash
 
-    print("="*50)
+    print("=")
     print(f"The recordHash provided the registerRecord() is:")
     print(onchain_record_hash)
 
