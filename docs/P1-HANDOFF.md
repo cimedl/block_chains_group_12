@@ -102,3 +102,21 @@ P1 tests check registration, verification permissions, identity changes, record
 ownership/IDs, reward authorization and duplicate prevention. They do not establish
 that P2 consent rules or P3 file-release security work. P4 needs real cross-component
 tests after integration, including revoked/expired access and suspended roles.
+
+## Integrated ConsentManager on integration/p1-p2
+
+P2 now imports the shared P1 interfaces and uses uint256 record IDs. Registry adds
+recordExists(recordId), a non-reverting existence lookup for ordinary denied requests.
+
+- grantAccess(recordId, category, requester, durationDays) returns grantId.
+- revokeAccess(recordId, grantId) binds both patient and record before mutation.
+- requestAccess(recordId, grantId) allocates and returns a unique requestId.
+- checkPermission(grantId, requester, recordId) previews the current decision.
+
+Patient/requester verification is checked at grant and access time. Category must
+exactly match the registry recordType. Duplicate active grants are rejected; revoked
+or expired grants can be replaced with a new ID. Reward=false on a valid duplicate
+eligibility key is accepted. Expiry equality is denied. Read docs/interfaces.md for
+event semantics and reason precedence, and docs/p1-p2-fixes.md for actual evidence.
+These branch integration choices and the retained per-record reward policy must be
+reflected in the team's agreed specification and final report.

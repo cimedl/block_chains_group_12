@@ -7,6 +7,7 @@
     "compile": "hardhat compile",
     "test": "hardhat test solidity",
     "node": "hardhat node --hostname 127.0.0.1",
+    "deploy": "hardhat compile && node scripts/deploy.mjs",
     "test:hashes": "python -m unittest discover -s test -p \"test_*.py\" -v",
     "sample": "python scripts/hash_data.py"
   },

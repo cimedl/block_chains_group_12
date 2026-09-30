@@ -1,5 +1,7 @@
 # P1 + P2 merge report
 
+> Historical report for merge commit `9497375`. Compilation and integration issues described below were repaired afterwards; see [current fixes and verification](p1-p2-fixes.md). Original logs and findings are preserved.
+
 - Date: 30 September 2026
 - New local branch: `integration/p1-p2`
 - Starting branch: `origin/thomas` at `b97799dfa2835cd8dd5dcdd6131294260ea6a80f`

@@ -172,6 +172,13 @@ contract HealthRegistryTest is TestHelper {
         registry.getRecord(0);
     }
 
+    function testRecordExistenceDoesNotRevertForMissingIds() public {
+        require(!registry.recordExists(0) && !registry.recordExists(999), "Unknown record exists");
+        uint256 id = addRecord();
+        require(registry.recordExists(id), "Registered record missing");
+        require(!registry.recordExists(id + 1), "Unallocated record exists");
+    }
+
     function testUnknownUserRejected() public {
         vm.expectRevert(bytes("Unknown user"));
         registry.getUser(other);

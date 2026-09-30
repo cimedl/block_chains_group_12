@@ -1,0 +1,76 @@
+{
+  "branch": "integration/p1-p2",
+  "base_commit": "94973757ef4448e82b2fac8d460701b1ed671d31",
+  "scope": "working tree containing the integration fixes; file hashes identify tested source",
+  "node": "v24.18.0",
+  "npm": "11.16.0",
+  "python": "3.14.6 (tags/v3.14.6:c63aec6, Jun 10 2026, 10:26:10) [MSC v.1944 64 bit (AMD64)]",
+  "compiler": "0.8.28",
+  "optimizer": {
+    "enabled": true,
+    "runs": 200
+  },
+  "source_sha256": {
+    "contracts/ConsentManager.sol": "5061d688828eeb2bfbf1ad6e50c56b65c8ce06d45f782e876a8f625712e00298",
+    "contracts/HealthRegistry.sol": "a592ed1d63b89d3f95cfea971c36694d7609ae41e9a87f442747f813a1dd1617",
+    "contracts/ConsentReward.sol": "0daf9267bd926c9a96b6c8779ea2bedae64839cbc9f8f441cc9219a87c61dc39",
+    "contracts/interfaces/IHealthRegistry.sol": "4e13f35aace8734eef1e86c013a1a59b3d37e6dc430959bfacb37e30c99cfaa6",
+    "contracts/interfaces/IConsentReward.sol": "1d0a77b8d58f7ee422d81d5066d2bb0d21be59f4a112e9bf5856c80cd871f451",
+    "test/ConsentManager.t.sol": "3bb43c019dae70a13daedb002cb88c8dbf26c1910dc713d3d4e3dab4446e57d8",
+    "test/HealthRegistry.t.sol": "dafc6da8aeafd43bf46478f4d897bfd6a825a2d6f35a08a3bdc3768d4ad6eba8",
+    "test/ConsentReward.t.sol": "2af8480f471101abf05fd3c3044843a326008345ac34c055400979010e8e2d72",
+    "test/TestHelper.sol": "b75af95f97ac0f42c5f286fae14266e2622f2fb8020f9c63e8c52a613d0b866b",
+    "scripts/deploy.mjs": "82da776c0b071a013c469e30b7571a3ca683e06fb4391a7e4ffc855ff32eeaf8",
+    "package.json": "0c72e2545c8aa7dfa319633dd03b83467fa22eced99aec4075023b9ac8f5a228",
+    "package-lock.json": "7cf44d4a107a4246b017e856b6a30b84eb0f5603ed24177ed1613a347fc28ebd"
+  },
+  "runs": [
+    {
+      "name": "compile",
+      "command": [
+        "C:\\Program Files\\nodejs\\npm.cmd",
+        "run",
+        "compile"
+      ],
+      "started_utc": "2026-09-30T12:40:29.687226+00:00",
+      "ended_utc": "2026-09-30T12:40:30.494719+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "solidity-tests",
+      "command": [
+        "C:\\Program Files\\nodejs\\npm.cmd",
+        "test"
+      ],
+      "started_utc": "2026-09-30T12:40:30.502963+00:00",
+      "ended_utc": "2026-09-30T12:40:31.530211+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "hash-tests",
+      "command": [
+        "C:\\Program Files\\nodejs\\npm.cmd",
+        "run",
+        "test:hashes"
+      ],
+      "started_utc": "2026-09-30T12:40:31.538201+00:00",
+      "ended_utc": "2026-09-30T12:40:32.094032+00:00",
+      "exit_code": 0
+    }
+  ],
+  "observed_counts": {
+    "solidity": 88,
+    "registry": 26,
+    "reward": 20,
+    "manager": 42,
+    "python": 5
+  },
+  "deployment": {
+    "command": "npm run deploy -- http://127.0.0.1:18545",
+    "exit_code": 0,
+    "node_lifecycle": "temporary node stopped after smoke check",
+    "contracts_deployed": 3,
+    "dependency_getters_verified": 4
+  },
+  "remaining_scope": "P3 private file delivery and multi-user experiments are not implemented or verified by these fixes."
+}
