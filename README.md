@@ -1,50 +1,62 @@
-# Healthcare project — P1 first draft
+# Healthcare P1 + P2 integration draft
 
-This is just P1's part: identity registration, medical-record hashes and consent
-reward points. The education project is still on the separate `plan-c` branch.
+This branch combines Thomas's registry/reward component with P2's ConsentManager.
+The Git conflicts are resolved, but the supplied contracts are not yet compatible:
+ConsentManager has a compile error and uses different registry/reward interfaces.
+See [the complete merge report](docs/p1-p2-merge-report.md) for resolutions,
+validation evidence, and outstanding issues. This is not a working end-to-end demo.
 
-## Try it
+## Included components
 
-Use Node.js 22.13+ on a supported even-numbered release, and Python 3.
+- `contracts/HealthRegistry.sol`: user registration, admin verification, immutable medical-record metadata.
+- `contracts/ConsentReward.sol`: ten non-transferable points per first record/requester pair.
+- `contracts/ConsentManager.sol`: P2's grant, revoke, request, and permission-check draft, preserved as supplied.
+- `contracts/interfaces/`: P1's shared interfaces; P2 currently declares incompatible local interfaces.
+- `test/`: P1's Solidity component tests and Python hashing tests.
+- `scripts/hash_data.py` and `data/`: SHA-256 helpers and synthetic fixture data.
+- `docs/P1-HANDOFF.md`: P1's draft interface and deployment assumptions.
+
+## Setup and checks
+
+The source branches specify a supported even-numbered Node.js release at least
+22.13 and Python 3. This merge was checked with the versions recorded in
+`results/p1-p2-merge/validation.json`. The hashing helper uses only Python's standard
+library. The npm Python scripts expect `python` to select Python 3; on systems that
+only provide `python3`, run the equivalent Python commands directly.
 
 ```sh
 npm ci
-npm test
 npm run test:hashes
 npm run sample
+npm run compile
+npm test
 ```
 
-The first Solidity compile needs an internet connection to download the compiler.
-Python uses only the standard library. Tests run locally with Hardhat and do not
-need a separate node, a wallet extension or real medical information.
+At the reviewed merge state, Python checks run but both Hardhat commands fail at
+`contracts/ConsentManager.sol:11` because an external string parameter lacks a
+data location. Consequently none of the merged Solidity tests execute. Fixing
+that syntax alone does not reconcile the P1/P2 interfaces.
 
-## Start reading here
+`npm run node` starts a local Hardhat RPC node bound to localhost. No healthcare
+deployment/demo or file-delivery script is included. Use the P1 handoff's deployment
+order only after the interface issues in the merge report are resolved; configure
+reward issuance with the real manager, not the unrestricted component-test stub.
 
-- `contracts/HealthRegistry.sol`: users, admin verification and record registration.
-- `contracts/ConsentReward.sol`: ten reward points for each first record/requester grant.
-- `contracts/interfaces/`: the functions other contracts need from P1.
-- `test/HealthRegistry.t.sol` and `test/ConsentReward.t.sol`: component tests.
-- `scripts/hash_data.py`: the identity and file hashing rules for P3.
-- `data/`: fake identity and record examples, not real health information.
-- `docs/P1-HANDOFF.md`: proposed interfaces and decisions to agree with teammates.
-- `results/`: saved output from tests and the sample script.
+## Historical material and evidence
 
-## What this draft does
+`EduConsent.zip`, `docs/UML.md`, `docs/uml.*`, and `requirements.txt` arrived through
+P2's education-project ancestry. They are retained as inherited material, not a
+healthcare architecture, deployment package, or required Python dependency set.
+The `demo`, `benchmark`, and old Python integration npm commands were removed from
+the merged package because their referenced scripts do not exist in this tree.
 
-A user registers as a patient, doctor or researcher. The admin marks their role
-verified after an off-chain check. A verified patient can register several records,
-even of the same type. Each gets its own record ID, owner, file hash and type.
-Files, names and storage locations are not stored in the contract.
+P1's `results/hash-tests.txt`, `results/sample-output.txt`, and
+`results/solidity-tests.txt` are historical component outputs from Thomas's branch.
+They do not demonstrate that this merged source passes. Fresh merge evidence is
+under `results/p1-p2-merge/`.
 
-Only the configured consent-manager contract can award points. A first grant for
-a record/requester pair earns the record's patient ten points. Repeating it gives
-no extra points. Points cannot be transferred, spent or used to gain access.
-
-This is not the full application yet. Consent requests, expiry, revocation, access
-logs, wallet login, encryption and file release belong to P2/P3. The reward tests
-use a small caller stub, not a real consent manager. Admin verification is a
-manual flag, not automatic identity or medical-license verification. A hash does
-not prove a clinic issued a record. Wallets, roles, record types and events are
-public; Solidity `private` does not make blockchain data secret.
-
-No report or presentation is included. This draft is for local review before sharing.
+Only synthetic identities/records are included. Wallet control and admin verification
+flags do not establish real identity, qualifications, or record truth. Permission
+and reward code does not itself provide secure file delivery; P3 integration remains
+outstanding. Review the draft rules and disclose actual contributions/AI assistance
+in the course report.

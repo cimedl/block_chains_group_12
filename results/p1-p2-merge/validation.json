@@ -1,0 +1,99 @@
+{
+  "branch": "integration/p1-p2",
+  "scope": "resolved merge working tree before merge commit",
+  "node": "v24.18.0",
+  "npm": "11.16.0",
+  "python": "3.14.6 (tags/v3.14.6:c63aec6, Jun 10 2026, 10:26:10) [MSC v.1944 64 bit (AMD64)]",
+  "dependency_install": {
+    "command": "npm ci --no-audit --no-fund",
+    "exit_code": 0,
+    "packages_added": 52,
+    "note": "esbuild@0.28.2 install-script approval notice; settings unchanged"
+  },
+  "package_lock_sha256": "7cf44d4a107a4246b017e856b6a30b84eb0f5603ed24177ed1613a347fc28ebd",
+  "solidity": {
+    "compiler": "0.8.28",
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    }
+  },
+  "contract_provenance": {
+    "contracts/HealthRegistry.sol": {
+      "source_ref": "origin/thomas",
+      "source_commit": "b97799dfa2835cd8dd5dcdd6131294260ea6a80f",
+      "unchanged_except_possible_line_endings": true,
+      "sha256": "87bc27346be889cf72976ff5b2c1c58452b12296997e8e73314a4b92a786b191"
+    },
+    "contracts/ConsentReward.sol": {
+      "source_ref": "origin/thomas",
+      "source_commit": "b97799dfa2835cd8dd5dcdd6131294260ea6a80f",
+      "unchanged_except_possible_line_endings": true,
+      "sha256": "0daf9267bd926c9a96b6c8779ea2bedae64839cbc9f8f441cc9219a87c61dc39"
+    },
+    "contracts/interfaces/IHealthRegistry.sol": {
+      "source_ref": "origin/thomas",
+      "source_commit": "b97799dfa2835cd8dd5dcdd6131294260ea6a80f",
+      "unchanged_except_possible_line_endings": true,
+      "sha256": "7fd4f8fa352085b888e5765c6ae135658e70fb77bc944765501cf37c5de56427"
+    },
+    "contracts/interfaces/IConsentReward.sol": {
+      "source_ref": "origin/thomas",
+      "source_commit": "b97799dfa2835cd8dd5dcdd6131294260ea6a80f",
+      "unchanged_except_possible_line_endings": true,
+      "sha256": "1d0a77b8d58f7ee422d81d5066d2bb0d21be59f4a112e9bf5856c80cd871f451"
+    },
+    "contracts/ConsentManager.sol": {
+      "source_ref": "origin/p2",
+      "source_commit": "12c4759868df2150492627f3fb1a28d6d10cd084",
+      "unchanged_except_possible_line_endings": true,
+      "sha256": "d05659e6228fb5ff3e8f90d43cd54978bdeac5e0d69201cec30b1998e0f9afdc"
+    }
+  },
+  "runs": [
+    {
+      "name": "compile",
+      "command": [
+        "C:\\Program Files\\nodejs\\npm.cmd",
+        "run",
+        "compile"
+      ],
+      "started_utc": "2026-09-30T12:07:24.099871+00:00",
+      "ended_utc": "2026-09-30T12:07:25.895811+00:00",
+      "exit_code": 1
+    },
+    {
+      "name": "solidity-tests",
+      "command": [
+        "C:\\Program Files\\nodejs\\npm.cmd",
+        "test"
+      ],
+      "started_utc": "2026-09-30T12:07:25.902824+00:00",
+      "ended_utc": "2026-09-30T12:07:26.937050+00:00",
+      "exit_code": 1
+    },
+    {
+      "name": "hash-tests",
+      "command": [
+        "C:\\Program Files\\nodejs\\npm.cmd",
+        "run",
+        "test:hashes"
+      ],
+      "started_utc": "2026-09-30T12:07:26.943639+00:00",
+      "ended_utc": "2026-09-30T12:07:27.622377+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "sample",
+      "command": [
+        "C:\\Program Files\\nodejs\\npm.cmd",
+        "run",
+        "sample"
+      ],
+      "started_utc": "2026-09-30T12:07:27.631773+00:00",
+      "ended_utc": "2026-09-30T12:07:28.090150+00:00",
+      "exit_code": 0
+    }
+  ],
+  "interpretation": "Compile and Solidity test commands fail at P2 interface line 11; no Solidity tests execute. Five Python hashing tests pass; sample exits 0."
+}
