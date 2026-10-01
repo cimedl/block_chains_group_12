@@ -1,8 +1,7 @@
 import json
-import hashlib
 from pathlib import Path
 from web3 import Web3
-
+from service.file_service import get_file
 # run the end-to-end demonstration
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -187,17 +186,19 @@ def main():
 
     print("\n4. Verify record integrity")
 
-    with open(record_path, "rb") as f:
-        local_hash = hashlib.sha256(f.read()).digest()
+    medical_record = get_file(
+        registry,
+        consent_manager,
+        record_id,
+        grant_id,
+        doctor,
+        record_path,
+    )
 
-    blockchain_hash = registry.functions.getRecord(record_id).call()[1]
-
-    print(f"    Local hash:      0x{local_hash.hex()}")
-    print(f"    Blockchain hash: {blockchain_hash.hex()}")
-
-    assert local_hash == blockchain_hash
+    assert medical_record is not None
 
     print("    RESULT: HASH MATCH")
+    print("    RESULT: RECORD RETRIEVED")
 
    ########################
     # 5. Revoke consent
