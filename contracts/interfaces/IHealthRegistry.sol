@@ -19,5 +19,6 @@ interface IHealthRegistry {
 
     function getUser(address account) external view returns (User memory);
     function getRecord(uint256 recordId) external view returns (Record memory);
+    function recordExists(uint256 recordId) external view returns (bool);
     function isVerified(address account, Role role) external view returns (bool);
 }

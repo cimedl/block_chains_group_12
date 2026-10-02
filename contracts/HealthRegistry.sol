@@ -83,6 +83,10 @@ contract HealthRegistry is IHealthRegistry {
         return records[recordId];
     }
 
+    function recordExists(uint256 recordId) external view override returns (bool) {
+        return records[recordId].patient != address(0);
+    }
+
     function isVerified(address account, Role role) public view override returns (bool) {
         if (role == Role.None) {
             return false;

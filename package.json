@@ -1,13 +1,14 @@
 {
-  "name": "healthcare-p1-draft",
+  "name": "healthcare-p1-p2-draft",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "compile": "hardhat compile",
-    "test": "hardhat test solidity",
-    "test:hashes": "python3 -m unittest discover -s test -p 'test_*.py' -v",
-    "sample": "python3 scripts/hash_data.py"
+    "node": "hardhat node --hostname 127.0.0.1",
+    "deploy": "hardhat compile && node scripts/deploy.mjs"
   },
-  "devDependencies": { "hardhat": "3.18.0" }
+  "devDependencies": {
+    "hardhat": "3.18.0"
+  }
 }
