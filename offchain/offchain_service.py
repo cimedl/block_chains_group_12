@@ -14,14 +14,14 @@ from storage_db import ServiceDatabase
 # Replay Prevention
 # Decryption
 
-# def load_abi(contract_name: str, artifacts_dir: str = "artifacts/contracts") -> list:
-#     """Load contract ABI from Hardhat build artifacts."""
-#     abi_path = os.path.join(artifacts_dir, f"{contract_name}.sol", f"{contract_name}.json")
-#     if not os.path.exists(abi_path):
-#         raise FileNotFoundError(f"ABI file not found: {abi_path}. Please run 'npx hardhat compile' first.")
-#     with open(abi_path, "r", encoding="utf-8") as f:
-#         artifact = json.load(f)
-#     return artifact["abi"]
+def load_abi(contract_name: str, artifacts_dir: str = "artifacts/contracts") -> list:
+    """Load contract ABI from Hardhat build artifacts."""
+    abi_path = os.path.join(artifacts_dir, f"{contract_name}.sol", f"{contract_name}.json")
+    if not os.path.exists(abi_path):
+        raise FileNotFoundError(f"ABI file not found: {abi_path}. Please run 'npx hardhat compile' first.")
+    with open(abi_path, "r", encoding="utf-8") as f:
+        artifact = json.load(f)
+    return artifact["abi"]
 
 CONSUMED_REQUESTS = set() # Record the IDs of processed requests to prevent duplicate claims.
 
@@ -39,17 +39,17 @@ class MedicalDataDeliveryService:
         self.w3 = web3_provider
         self.db = ServiceDatabase(db_path)
 
-        # reg_abi = health_registry_abi or load_abi("HealthRegistry")
-        # consent_abi = consent_manager_abi or load_abi("ConsentManager")
+        reg_abi = health_registry_abi or load_abi("HealthRegistry")
+        consent_abi = consent_manager_abi or load_abi("ConsentManager")
 
         # Bind the smart contract
         self.registry = self.w3.eth.contract(
             address=Web3.to_checksum_address(health_registry_address),
-            abi=health_registry_abi
+            abi=reg_abi
         )
         self.consent_manager = self.w3.eth.contract(
             address=Web3.to_checksum_address(consent_manager_address),
-            abi=consent_manager_abi
+            abi=consent_abi
         )
 
     def check_consent(self, user_address: str, requester_address: str) -> bool:
@@ -97,19 +97,26 @@ class MedicalDataDeliveryService:
             raise ValueError("No AccessDecision event found in receipt.")
         
         decision = events[0]["args"]
-        if str(decision["requestId"]) != str(request_id):
+        #if str(decision["requestId"]) != str(request_id):
+        if int(decision["requestId"]) != int(request_id):
             raise ValueError("Request ID does not match transaction receipt.")
         if decision["requester"].lower() != requester_address.lower():
             raise PermissionError("Requester does not match on-chain receipt.")
-        if decision["recordId"] != record_id:
+        #if decision["recordId"] != record_id:
+        if int(decision["recordId"]) != int(record_id):
             raise ValueError("Record ID does not match transaction receipt.")
         if not decision["allowed"]:
             raise PermissionError(f"Access denied on-chain: {decision.get('reason')}")
 
-        grant_id = decision.get("grantId")
+        #grant_id = decision.get("grantId")
+        grant_id = int(decision["grantId"])
 
         # Double check current consent status
-        is_active = self.consent_manager.functions.isConsentActive(grant_id).call()
+        is_active = self.consent_manager.functions.checkPermission(
+            grant_id,
+            Web3.to_checksum_address(requester_address),
+            record_id
+        ).call()
         if not is_active:
             raise PermissionError("Consent is no longer active (revoked or expired).")
 
