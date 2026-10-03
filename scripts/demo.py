@@ -1,9 +1,11 @@
+# TODO: review all code in this file imported from part3.
 """Run with: .venv/bin/python scripts/demo.py"""
 
 import json
 from education import EducationDemo, ROOT, DIPLOMA, sample_identity, sample_diploma
 
 
+# TODO: review this imported or added definition.
 def main():
     demo = EducationDemo(ROOT / ".local/records")
     address = demo.deploy()

@@ -1,4 +1,5 @@
 # P3 merge: review before pushing
+<!-- TODO: review this added checklist and every item before pushing. -->
 
 Target: integration/p1-p2, originally 0bc5bbbc99369dcc32c44d33c30ace907b4eff53.
 Source: origin/part3 at f14244498940bf3f2246c6ea0a659a6afa238c36.
@@ -49,3 +50,18 @@ This lists every incoming file, manual resolution, and local addition. Unchecked
 - [ ] Rerun checks affected by later review edits, then push the chosen branch explicitly. Pre-existing untracked review documents/results are excluded from this merge commit.
 - [x] All 24 pre-existing untracked files were verified byte-for-byte unchanged; no unresolved conflicts or conflict markers remain.
 - [ ] Review inherited whitespace warnings from git diff --cached --check: trailing spaces/blank EOF lines in incoming offchain modules and CRLF warnings in results/gas-summary.csv. These were retained to avoid unrelated file edits; manual corrections pass the whitespace check.
+
+<!-- TODO: review all annotation and push-guard additions below. -->
+## Review comments and local push guard
+
+- [ ] Review the added # TODO: review markers in all four offchain modules, scripts/education.py, scripts/demo.py, scripts/benchmark.py, and .local/p3-merge-smoke.py. Markers cover entire imported/added files and individual definitions; comments also identify the exact manual service/database fixes. Code bodies were preserved.
+- [ ] Review the added //TODO: review markers in contracts/EduConsent.sol; imported contract bodies were preserved.
+- [ ] Review the added comments in .gitignore and requirements.txt and the HTML review comments and push-review instructions in README.md and docs/p3-merge-todo.md.
+- [ ] Review .githooks/pre-push, the new local Git hook which runs the Node review checker.
+- [ ] Review scripts/check-p3-review.mjs, the new checker: rejects unchecked committed checklist items, missing final sign-off, omitted file names, and uncommitted changes to the reviewed files.
+- [ ] Review the local .git/config change: core.hooksPath is now .githooks. No existing custom hook path or pre-push hook was replaced. This local configuration is not committed or installed automatically in another clone.
+- [ ] Review comment coverage for formats without comments: package.json and incoming JSON/CSV/results files remain syntactically unchanged and are covered by this checklist instead.
+- [ ] Final review sign-off: I have personally checked every added or edited file, reviewed or explicitly accepted all remaining issues above, and approve pushing this change.
+- [x] Review guard behavior checks passed: incomplete checklist, missing checklist/sign-off/file entry, and uncommitted changes block; a fully checked in-memory checklist passes. No human-review items were automatically checked.
+- [x] Review annotations were verified to add comments only across all nine existing code files; tracked Python syntax trees are unchanged.
+- [ ] Review .gitattributes: the added hook is forced to LF line endings so Windows checkouts preserve its executable shell header.

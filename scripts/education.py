@@ -1,3 +1,4 @@
+# TODO: review all code in this file imported from part3.
 """Functions for the local education demo. Only use fake student data here."""
 
 import json
@@ -14,12 +15,14 @@ TRANSCRIPT = 1
 CERTIFICATE = 2
 
 
+# TODO: review this imported or added definition.
 def record_hash(record):
     """Sort the keys so the same record always gives the same hash."""
     text = json.dumps(record, sort_keys=True, separators=(",", ":"))
     return Web3.keccak(text=text)
 
 
+# TODO: review this imported or added definition.
 def sample_identity(number=1):
     return {
         "name": f"Demo Student {number}",
@@ -31,6 +34,7 @@ def sample_identity(number=1):
     }
 
 
+# TODO: review this imported or added definition.
 def sample_diploma(number=1):
     return {
         "student_id": f"DEMO-{number:03}",
@@ -43,7 +47,9 @@ def sample_diploma(number=1):
 
 
 # Keep the connection, contract and file folder together in one object.
+# TODO: review this imported or added definition.
 class EducationDemo:
+    # TODO: review this imported or added definition.
     def __init__(self, storage_directory, rpc_url="http://127.0.0.1:8545"):
         self.web3 = Web3(Web3.HTTPProvider(rpc_url))
         if not self.web3.is_connected():
@@ -58,6 +64,7 @@ class EducationDemo:
         self.artifact = json.loads(artifact.read_text())
         self.contract = None
 
+    # TODO: review this imported or added definition.
     def send(self, function, sender, label):
         """Send the transaction and save its gas use for the assignment."""
         started = time.perf_counter()
@@ -74,6 +81,7 @@ class EducationDemo:
         })
         return receipt
 
+    # TODO: review this imported or added definition.
     def deploy(self):
         factory = self.web3.eth.contract(
             abi=self.artifact["abi"], bytecode=self.artifact["bytecode"]
@@ -84,6 +92,7 @@ class EducationDemo:
         )
         return receipt.contractAddress
 
+    # TODO: review this imported or added definition.
     def register(self, student, identity):
         identity_hash = record_hash(identity)
         function = self.contract.functions.register(identity_hash)
@@ -92,9 +101,11 @@ class EducationDemo:
         path.write_text(json.dumps(identity, indent=2) + "\n")
         return receipt
 
+    # TODO: review this imported or added definition.
     def record_path(self, student, data_type):
         return self.storage / f"{student.lower()}-{int(data_type)}.json"
 
+    # TODO: review this imported or added definition.
     def publish(self, student, data_type, record):
         file_hash = record_hash(record)
         function = self.contract.functions.publishData(data_type, file_hash)
@@ -103,14 +114,17 @@ class EducationDemo:
         path.write_text(json.dumps(record, indent=2) + "\n")
         return receipt
 
+    # TODO: review this imported or added definition.
     def grant(self, student, requester, data_type=DIPLOMA, days=1):
         function = self.contract.functions.grantConsent(requester, data_type, days)
         return self.send(function, student, "grantConsent")
 
+    # TODO: review this imported or added definition.
     def revoke(self, student, requester, data_type=DIPLOMA):
         function = self.contract.functions.revokeConsent(requester, data_type)
         return self.send(function, student, "revokeConsent")
 
+    # TODO: review this imported or added definition.
     def access(self, student, requester, data_type=DIPLOMA):
         """Ask the contract for access before reading the student's file."""
         function = self.contract.functions.requestAccess(student, data_type)
@@ -135,6 +149,7 @@ class EducationDemo:
             return {"allowed": False, "reason": "Record hash mismatch", "record": None}
         return {"allowed": True, "reason": "Valid consent and matching hash", "record": record}
 
+    # TODO: review this imported or added definition.
     def advance_time(self, seconds):
         """Skip time on the test blockchain instead of waiting a whole day."""
         reply = self.web3.provider.make_request("evm_increaseTime", [seconds])

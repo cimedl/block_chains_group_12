@@ -1,3 +1,4 @@
+# TODO: review all code in this file imported from part3.
 """Try different numbers of students and save the gas results."""
 
 import csv
@@ -7,6 +8,7 @@ import tempfile
 from education import EducationDemo, ROOT, DIPLOMA, record_hash, sample_identity, sample_diploma
 
 
+# TODO: review this imported or added definition.
 def main():
     results = ROOT / "results"
     results.mkdir(exist_ok=True)

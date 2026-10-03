@@ -1,3 +1,4 @@
+# TODO: review all code in this file imported from part3.
 import os
 import json
 import secrets
@@ -10,6 +11,7 @@ KEY_PATH = os.path.join("data", "secret.key")
 PLAINTEXT_RECORD_PATH = os.path.join("data", "fake-record.json")
 ENCRYPTED_RECORD_PATH = os.path.join("data", "fake-record.enc")
 
+# TODO: review this imported or added definition.
 def get_or_create_key(key_path: str = KEY_PATH) -> bytes:
     # Load key，or generate a new one
     # Use for local file encryption and decryption
@@ -24,6 +26,7 @@ def get_or_create_key(key_path: str = KEY_PATH) -> bytes:
     print(f"Generate a new key and save it to: {key_path}")
     return key
 
+# TODO: review this imported or added definition.
 def encrypt_record_file(
     input_json_path: str = PLAINTEXT_RECORD_PATH,
     output_enc_path: str = ENCRYPTED_RECORD_PATH,
@@ -47,6 +50,7 @@ def encrypt_record_file(
     onchain_record_hash = calculate_file_hash(encrypted_bytes)
     return onchain_record_hash
 
+# TODO: review this imported or added definition.
 def decrypt_record_file(
     enc_path: str = ENCRYPTED_RECORD_PATH,
     key_path: str = KEY_PATH

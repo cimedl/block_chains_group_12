@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
+//TODO: review all code in this contract imported from part3.
 pragma solidity ^0.8.28;
 
 // Students choose who can see their diploma, transcript or certificate.
+//TODO: review this imported definition.
 contract EduConsent {
     // These are numbered 0, 1 and 2. The Python code uses the same numbers.
     enum DataType { Diploma, Transcript, Certificate }
@@ -51,11 +53,13 @@ contract EduConsent {
     );
 
     // Reuse this check in functions that need a registered student.
+    //TODO: review this imported definition.
     modifier registeredStudent() {
         require(identities[msg.sender].registered, "Register first");
         _;
     }
 
+    //TODO: review this imported definition.
     function register(bytes32 attributesHash) external {
         require(!identities[msg.sender].registered, "Already registered");
         require(attributesHash != bytes32(0), "Empty hash");
@@ -64,18 +68,21 @@ contract EduConsent {
         emit IdentityRegistered(msg.sender, attributesHash);
     }
 
+    //TODO: review this imported definition.
     function updateIdentity(bytes32 attributesHash) external registeredStudent {
         require(attributesHash != bytes32(0), "Empty hash");
         identities[msg.sender].attributesHash = attributesHash;
         emit IdentityUpdated(msg.sender, attributesHash);
     }
 
+    //TODO: review this imported definition.
     function publishData(DataType dataType, bytes32 dataHash) external registeredStudent {
         require(dataHash != bytes32(0), "Empty hash");
         dataHashes[msg.sender][dataType] = dataHash;
         emit DataPublished(msg.sender, dataType, dataHash);
     }
 
+    //TODO: review this imported definition.
     function grantConsent(address requester, DataType dataType, uint256 durationDays)
         external registeredStudent
     {
@@ -95,12 +102,14 @@ contract EduConsent {
         }
     }
 
+    //TODO: review this imported definition.
     function revokeConsent(address requester, DataType dataType) external registeredStudent {
         require(consents[msg.sender][requester][dataType].active, "No active consent");
         consents[msg.sender][requester][dataType].active = false;
         emit ConsentRevoked(msg.sender, requester, dataType);
     }
 
+    //TODO: review this imported definition.
     function hasConsent(address student, address requester, DataType dataType)
         public view returns (bool)
     {
@@ -122,6 +131,7 @@ contract EduConsent {
         return true;
     }
 
+    //TODO: review this imported definition.
     function requestAccess(address student, DataType dataType) external returns (bool) {
         bool allowed = hasConsent(student, msg.sender, dataType);
         // Log denied attempts too. A revert would remove this event.

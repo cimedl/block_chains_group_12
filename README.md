@@ -86,6 +86,7 @@ education-project material. They are not the healthcare architecture or the requ
 dependency set for these standard-library helpers. Review and understand the changes,
 record individual contributions, and disclose AI assistance in the course report.
 
+<!-- TODO: review the P3 integration notes added below. -->
 ## P3 delivery service integration
 
 `offchain/` now contains P3 encryption, signed-request verification, on-chain
@@ -95,3 +96,17 @@ standard-library hashing helpers above still need no additional dependencies.
 The earlier P3 implementation requirements and historical requirements.txt note describe the pre-merge state.
 The delivery service is a draft and still needs the review and end-to-end checks
 listed in [the pre-push TODO checklist](docs/p3-merge-todo.md).
+
+<!-- TODO: review the added local push-review instructions below. -->
+## Required review before pushing
+
+Normal local Git pushes are blocked by .githooks/pre-push until every item in
+[docs/p3-merge-todo.md](docs/p3-merge-todo.md), including the final review sign-off,
+is checked and committed. Check an item only after reviewing it or explicitly
+accepting the remaining issue. Review comments use each language's valid syntax;
+JSON and saved results are covered by the checklist.
+
+The guard also blocks uncommitted edits to the reviewed files. It is active in
+this checkout through the local core.hooksPath setting. Another clone must run
+`git config --local core.hooksPath .githooks` to activate it. This is a local Git
+hook, not a server-enforced rule.

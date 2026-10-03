@@ -7,6 +7,7 @@ __pycache__/
 .local/
 *.zip
 
+# TODO: review the added IDE and P3 runtime exclusions below.
 # Local IDE and P3 runtime files
 .idea/
 data/secret.key

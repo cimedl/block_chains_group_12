@@ -1,3 +1,4 @@
+# TODO: review all code in this file imported from part3.
 import os
 import json
 from typing import Dict, Any
@@ -14,6 +15,7 @@ from storage_db import ServiceDatabase
 # Replay Prevention
 # Decryption
 
+# TODO: review this imported or added definition.
 def load_abi(contract_name: str, artifacts_dir: str = "artifacts/contracts") -> list:
     """Load contract ABI from Hardhat build artifacts."""
     abi_path = os.path.join(artifacts_dir, f"{contract_name}.sol", f"{contract_name}.json")
@@ -25,7 +27,9 @@ def load_abi(contract_name: str, artifacts_dir: str = "artifacts/contracts") -> 
 
 CONSUMED_REQUESTS = set() # Record the IDs of processed requests to prevent duplicate claims.
 
+# TODO: review this imported or added definition.
 class MedicalDataDeliveryService:
+    # TODO: review this imported or added definition.
     def __init__(
         self,
         web3_provider: Web3,
@@ -37,6 +41,7 @@ class MedicalDataDeliveryService:
         db_path: str = "service_state.db"
     ):
         self.w3 = web3_provider
+        # TODO: review added data-directory initialization.
         self.data_dir = data_dir
         self.db = ServiceDatabase(db_path)
 
@@ -53,6 +58,7 @@ class MedicalDataDeliveryService:
             abi=consent_abi
         )
 
+    # TODO: review this imported or added definition.
     def check_consent(self, user_address: str, requester_address: str) -> bool:
         try:
             is_granted = self.consent_manager.functions.isConsentGranted(
@@ -64,6 +70,7 @@ class MedicalDataDeliveryService:
             print(f"Error checking consent: {e}")
             return False
 
+    # TODO: review this imported or added definition.
     def verify_requester_identity(self, requester: str, signature: str, challenge: str):
         try:
             signable = encode_defunct(text=challenge)
@@ -73,6 +80,7 @@ class MedicalDataDeliveryService:
         except Exception as e:
             raise PermissionError(f"Authentication failed: {str(e)}")
         
+    # TODO: review this imported or added definition.
     def request_record_delivery(
         self,
         record_id: int,
@@ -83,6 +91,7 @@ class MedicalDataDeliveryService:
         request_id: str
     ) -> Dict[str, Any]:
         # Verify authorization and deliver the decrypted record data.
+        # TODO: review added request-ID normalization for persistent replay checks.
         request_id = str(int(request_id))
         self.verify_requester_identity(requester_address, signature, challenge_message)
 

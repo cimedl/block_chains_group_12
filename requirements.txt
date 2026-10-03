@@ -1,3 +1,4 @@
 web3==7.16.0
+# TODO: review the corrected eth-account pin and added cryptography dependency.
 eth-account==0.13.6
 cryptography==44.0.0
