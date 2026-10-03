@@ -20,8 +20,8 @@ This lists every incoming file, manual resolution, and local addition. Unchecked
 ## All incoming files
 
 - [ ] Review offchain/crypto_utils.py, offchain/encrypt_record.py, offchain/offchain_service.py, and offchain/storage_db.py. Only the small corrections above were applied to incoming module bodies.
-- [ ] Review contracts/EduConsent.sol, scripts/education.py, scripts/demo.py, and scripts/benchmark.py. They came from P3's ancestry; the demo is an education demo, not a healthcare delivery demo.
-- [ ] Review results/benchmark-output.txt, results/demo-output.txt, results/demo-transactions.json, results/gas-samples.json, results/gas-summary.csv, and results/integration-tests.txt. These are incoming historical education outputs, not evidence for this healthcare merge.
+- [ ] Review removal of contracts/EduConsent.sol, scripts/education.py, scripts/demo.py, and scripts/benchmark.py. These inherited education files were outside the healthcare project.
+- [ ] Review removal of results/benchmark-output.txt, results/demo-output.txt, results/demo-transactions.json, results/gas-samples.json, results/gas-summary.csv, and results/integration-tests.txt. These saved education outputs do not belong to this healthcare project.
 - [ ] Review the full merge diff against the target parent and manual corrections against the P3 parent. Healthcare contracts/interfaces, existing tests, deployment script, and package lock were retained from the target.
 - [ ] Decide separately whether to integrate the newer origin/integration/p1-p2-runtime commits. Only runtime history already present in part3 is included here.
 
@@ -49,13 +49,13 @@ This lists every incoming file, manual resolution, and local addition. Unchecked
 - [ ] Review generated ignored artifacts/cache from compilation; these are excluded from Git.
 - [ ] Rerun checks affected by later review edits, then push the chosen branch explicitly. Pre-existing untracked review documents/results are excluded from this merge commit.
 - [x] All 24 pre-existing untracked files were verified byte-for-byte unchanged; no unresolved conflicts or conflict markers remain.
-- [ ] Review inherited whitespace warnings from git diff --cached --check: trailing spaces/blank EOF lines in incoming offchain modules and CRLF warnings in results/gas-summary.csv. These were retained to avoid unrelated file edits; manual corrections pass the whitespace check.
+- [ ] Review inherited whitespace warnings from git diff --cached --check: trailing spaces/blank EOF lines in incoming offchain modules. The education gas-summary.csv was subsequently removed; remaining whitespace was retained to avoid unrelated edits.
 
 <!-- TODO: review all annotation and push-guard additions below. -->
 ## Review comments and local push guard
 
-- [ ] Review the added # TODO: review markers in all four offchain modules, scripts/education.py, scripts/demo.py, scripts/benchmark.py, and .local/p3-merge-smoke.py. Markers cover entire imported/added files and individual definitions; comments also identify the exact manual service/database fixes. Code bodies were preserved.
-- [ ] Review the added //TODO: review markers in contracts/EduConsent.sol; imported contract bodies were preserved.
+- [ ] Review the added # TODO: review markers in all four offchain modules and .local/p3-merge-smoke.py. Markers cover whole imported/added files, individual definitions, and manual fixes. The annotated education scripts were later removed.
+- [ ] Review removal of the annotated contracts/EduConsent.sol; this education contract is no longer compiled or part of the checkout.
 - [ ] Review the added comments in .gitignore and requirements.txt and the HTML review comments and push-review instructions in README.md and docs/p3-merge-todo.md.
 - [ ] Review .githooks/pre-push, the new local Git hook which runs the Node review checker.
 - [ ] Review scripts/check-p3-review.mjs, the new checker: rejects unchecked committed checklist items, missing final sign-off, omitted file names, and uncommitted changes to the reviewed files.
@@ -65,3 +65,12 @@ This lists every incoming file, manual resolution, and local addition. Unchecked
 - [x] Review guard behavior checks passed: incomplete checklist, missing checklist/sign-off/file entry, and uncommitted changes block; a fully checked in-memory checklist passes. No human-review items were automatically checked.
 - [x] Review annotations were verified to add comments only across all nine existing code files; tracked Python syntax trees are unchanged.
 - [ ] Review .gitattributes: the added hook is forced to LF line endings so Windows checkouts preserve its executable shell header.
+
+<!-- TODO: review the healthcare-only cleanup below. -->
+## Education material removed
+
+- [ ] Review removal of the older EduConsent.zip archive and docs/UML.md, docs/uml.dot, docs/uml.png, and docs/uml.svg education diagrams. Healthcare architecture documentation remains.
+- [ ] Review the targeted README.md cleanup and scripts/check-p3-review.mjs changes. The guard continues to cover deleted paths and now also covers the removed archive/diagrams, so their removal or restoration requires review.
+- [ ] Confirm that only the healthcare contracts/interfaces, P3 offchain service, healthcare deployment/hash scripts, and healthcare tests remain as current application code. Historical merge reports retain their original references as an audit record.
+- [x] After education cleanup, a clean healthcare build passed all 88 Solidity tests and 5 Python hash tests; no EduConsent build artifacts remain.
+- [x] The updated review guard passed all 6 behavior checks, including tracking removed education paths; human-review items remain unchecked.

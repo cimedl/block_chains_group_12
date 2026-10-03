@@ -81,9 +81,10 @@ integrity verification, replay protection and private file delivery. Use only
 synthetic records. Admin verification is a manual demo flag, not proof of a medical
 license or identity; hashes do not prove a clinic issued a record.
 
-`EduConsent.zip`, `docs/UML.md`, `docs/uml.*` and `requirements.txt` are historical
-education-project material. They are not the healthcare architecture or the required
-dependency set for these standard-library helpers. Review and understand the changes,
+<!-- TODO: review the education cleanup and current dependency note. -->
+`requirements.txt` supplies the healthcare P3 dependencies. The inherited education
+contract, demos, archive, diagrams, and saved education outputs have been removed.
+Review and understand the changes,
 record individual contributions, and disclose AI assistance in the course report.
 
 <!-- TODO: review the P3 integration notes added below. -->
@@ -93,7 +94,7 @@ record individual contributions, and disclose AI assistance in the course report
 permission checks, file-integrity checks, and SQLite receipt-consumption tracking.
 Install its dependencies with `python -m pip install -r requirements.txt`; the
 standard-library hashing helpers above still need no additional dependencies.
-The earlier P3 implementation requirements and historical requirements.txt note describe the pre-merge state.
+The earlier P3 implementation requirements describe the pre-merge state.
 The delivery service is a draft and still needs the review and end-to-end checks
 listed in [the pre-push TODO checklist](docs/p3-merge-todo.md).
 

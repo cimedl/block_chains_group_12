@@ -8,7 +8,9 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const checklistPath = "docs/p3-merge-todo.md";
 const reviewedFiles = [
   ".gitignore", ".gitattributes", "README.md", "package.json", "requirements.txt", checklistPath,
-  "contracts/EduConsent.sol",
+  //TODO: review these deleted education paths as part of healthcare-only cleanup.
+  "contracts/EduConsent.sol", "EduConsent.zip",
+  "docs/UML.md", "docs/uml.dot", "docs/uml.png", "docs/uml.svg",
   "offchain/crypto_utils.py", "offchain/encrypt_record.py",
   "offchain/offchain_service.py", "offchain/storage_db.py",
   "scripts/education.py", "scripts/demo.py", "scripts/benchmark.py",
