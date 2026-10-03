@@ -85,3 +85,13 @@ license or identity; hashes do not prove a clinic issued a record.
 education-project material. They are not the healthcare architecture or the required
 dependency set for these standard-library helpers. Review and understand the changes,
 record individual contributions, and disclose AI assistance in the course report.
+
+## P3 delivery service integration
+
+`offchain/` now contains P3 encryption, signed-request verification, on-chain
+permission checks, file-integrity checks, and SQLite receipt-consumption tracking.
+Install its dependencies with `python -m pip install -r requirements.txt`; the
+standard-library hashing helpers above still need no additional dependencies.
+The earlier P3 implementation requirements and historical requirements.txt note describe the pre-merge state.
+The delivery service is a draft and still needs the review and end-to-end checks
+listed in [the pre-push TODO checklist](docs/p3-merge-todo.md).

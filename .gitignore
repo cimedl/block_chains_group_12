@@ -6,3 +6,12 @@ dist/
 __pycache__/
 .local/
 *.zip
+
+# Local IDE and P3 runtime files
+.idea/
+data/secret.key
+data/*.enc
+*.db
+*.db-journal
+*.db-wal
+*.db-shm

@@ -1,0 +1,7 @@
+npm notice run educonsent@1.0.0 benchmark
+npm notice run .venv/bin/python scripts/benchmark.py
+PASS: 1 students, 10 successful data accesses
+PASS: 5 students, 50 successful data accesses
+PASS: 10 students, 100 successful data accesses
+Saved results/gas-summary.csv and results/gas-samples.json
+Times measure submission + local auto-mining + receipt retrieval, not public-network latency.

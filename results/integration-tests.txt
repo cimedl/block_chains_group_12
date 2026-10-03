@@ -1,0 +1,17 @@
+npm notice run educonsent@1.0.0 test:integration
+npm notice run .venv/bin/python -m unittest discover -s test -p "test_*.py" -v
+test_complete_workflow_and_persistent_audit (test_integration.EducationIntegrationTest.test_complete_workflow_and_persistent_audit) ... ok
+test_expiry_prevents_file_release (test_integration.EducationIntegrationTest.test_expiry_prevents_file_release) ... ok
+test_hash_ignores_dictionary_key_order (test_integration.EducationIntegrationTest.test_hash_ignores_dictionary_key_order) ... ok
+test_missing_local_record_is_rejected (test_integration.EducationIntegrationTest.test_missing_local_record_is_rejected) ... ok
+test_rewards_are_not_paid_on_access_or_regrant (test_integration.EducationIntegrationTest.test_rewards_are_not_paid_on_access_or_regrant) ... ok
+test_salts_make_identical_attributes_have_different_hashes (test_integration.EducationIntegrationTest.test_salts_make_identical_attributes_have_different_hashes) ... ok
+test_tampered_local_record_is_rejected (test_integration.EducationIntegrationTest.test_tampered_local_record_is_rejected) ... ok
+test_two_students_control_separate_records (test_integration.EducationIntegrationTest.test_two_students_control_separate_records) ... ok
+test_wrong_data_type_is_denied (test_integration.EducationIntegrationTest.test_wrong_data_type_is_denied) ... ok
+test_wrong_requester_is_denied (test_integration.EducationIntegrationTest.test_wrong_requester_is_denied) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.587s
+
+OK
