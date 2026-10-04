@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import {IHealthRegistry} from "./interfaces/IHealthRegistry.sol";
@@ -60,8 +59,8 @@ contract ConsentManager {
     mapping(uint256 => mapping(address => uint256)) public latestGrantId;
 
 
-    address public immutable healthRegistry;
-    address public immutable consentReward;
+    address public healthRegistry;
+    address public consentReward;
 
     constructor(address _registry, address _reward) {
         require(_registry.code.length > 0, "Registry must be a contract");
@@ -75,13 +74,13 @@ contract ConsentManager {
         string memory category,
         address requester,
         uint256 durationDays
-        ) external returns (uint256) {
+        ) external {
             IHealthRegistry.Record memory record = IHealthRegistry(healthRegistry).getRecord(recordId);
             address trueOwner = record.patient;
 
             require(msg.sender == trueOwner, "UNAUTHORIZED: Not the record owner");
             require(requester != address(0), "INVALID: Requester cannot be zero address");
-            require(durationDays >= 1 && durationDays <= 365, "INVALID: Duration must be 1-365 days");
+            require(durationDays >= 1 && durationDays <= 365, "INVALID: Duration must be 1=365 days");
 
             require(IHealthRegistry(healthRegistry).isVerified(trueOwner, IHealthRegistry.Role.Patient), "Patient not verified");
             require(
@@ -90,14 +89,6 @@ contract ConsentManager {
                 "Requester not verified"
             );
             require(keccak256(bytes(category)) == keccak256(bytes(record.recordType)), "INVALID: Record category mismatch");
-
-            {
-                ConsentRecord memory previous = consentGrants[latestGrantId[recordId][requester]];
-                require(
-                    previous.patient == address(0) || previous.revokedStatus || block.timestamp >= previous.endTime,
-                    "INVALID: Consent already active"
-                );
-            }
 
             uint256 start = block.timestamp;
             uint256 end = start + (durationDays * 1 days);
@@ -119,8 +110,6 @@ contract ConsentManager {
             latestGrantId[recordId][requester] = thisGrantId;
             currentGrantId++;
 
-            // Duplicate reward eligibility returns false; valid regrant still succeeds.
-            // A reward error reverts the entire grant and its counters.
             IConsentReward(consentReward).rewardConsent(
                 recordId,
                 requester);
@@ -131,7 +120,6 @@ contract ConsentManager {
                 requester,
                 recordId
             );
-            return thisGrantId;
         }
 
     function revokeAccess(
@@ -142,11 +130,8 @@ contract ConsentManager {
             require(grant.patient != address(0), "INVALID: Unknown grant");
             require(grant.recordId == recordId, "INVALID: Grant record mismatch");
             address trueOwner = IHealthRegistry(healthRegistry).getRecord(recordId).patient;
-            require(msg.sender == trueOwner && msg.sender == grant.patient, "UNAUTHORIZED: Not the record owner");
+            require(msg.sender == trueOwner, "UNAUTHORIZED: Not the record owner");
 
-            require(!grant.revokedStatus, "INVALID: Consent already revoked");
-
-            // Suspended owners must still be able to withdraw consent.
             consentGrants[grantId].revokedStatus = true;
             emit ConsentRevoked(
                 grantId,
@@ -160,7 +145,7 @@ contract ConsentManager {
     function requestAccess(
         uint256 recordId,
         uint256 grantId
-        ) external returns (uint256) {
+        ) external {
 
         ConsentRecord memory grant = consentGrants[grantId];
         uint256 requestId = currentRequestId;
@@ -176,7 +161,7 @@ contract ConsentManager {
                 block.timestamp,
                 false,
                 ReasonCode.UNKNOWN_RECORD);
-            return requestId;
+            return;
         }
 
         IHealthRegistry.Record memory record = IHealthRegistry(healthRegistry).getRecord(recordId);
@@ -196,7 +181,7 @@ contract ConsentManager {
                 block.timestamp,
                 false,
                 ReasonCode.UNREGISTERED_REQUESTER);
-            return requestId;
+            return;
         }
 
         if (!IHealthRegistry(healthRegistry).isVerified(record.patient, IHealthRegistry.Role.Patient)) {
@@ -209,10 +194,10 @@ contract ConsentManager {
                 block.timestamp,
                 false,
                 ReasonCode.PATIENT_NOT_VERIFIED);
-            return requestId;
+            return;
         }
 
-        if (grant.patient == address(0) || grant.patient != record.patient) {
+        if (grant.patient == address(0)) {
             emit AccessDecision(
                 requestId,
                 record.patient,
@@ -222,7 +207,7 @@ contract ConsentManager {
                 block.timestamp,
                 false,
                 ReasonCode.NO_CONSENT);
-            return requestId;
+            return;
         }
 
         if (grant.requester != msg.sender) {
@@ -235,7 +220,7 @@ contract ConsentManager {
                 block.timestamp,
                 false,
                 ReasonCode.NO_CONSENT);
-            return requestId;
+            return;
         }
 
         if (grant.recordId != recordId) {
@@ -248,7 +233,7 @@ contract ConsentManager {
                 block.timestamp,
                 false,
                 ReasonCode.NO_CONSENT);
-            return requestId;
+            return;
         }
 
 
@@ -262,7 +247,7 @@ contract ConsentManager {
                 block.timestamp,
                 false,
                 ReasonCode.REVOKED);
-            return requestId;
+            return;
         }
 
         if (block.timestamp >= grant.endTime) {
@@ -275,7 +260,7 @@ contract ConsentManager {
                 block.timestamp,
                 false,
                 ReasonCode.EXPIRED);
-            return requestId;
+            return;
         }
 
         emit AccessDecision(
@@ -287,7 +272,6 @@ contract ConsentManager {
             block.timestamp,
             true,
             ReasonCode.GRANTED);
-        return requestId;
     }
 
     // Used to check if the patient hasn't revoked access while the request for access was being processed
@@ -298,19 +282,16 @@ contract ConsentManager {
     ) external view returns (bool) {
         ConsentRecord memory grant = consentGrants[grantId];
 
-        if (!IHealthRegistry(healthRegistry).recordExists(recordId)) return false;
-        IHealthRegistry.Record memory record = IHealthRegistry(healthRegistry).getRecord(recordId);
-        if (!IHealthRegistry(healthRegistry).isVerified(record.patient, IHealthRegistry.Role.Patient)) return false;
-        bool doctor = IHealthRegistry(healthRegistry).isVerified(requester, IHealthRegistry.Role.Doctor);
-        bool researcher = IHealthRegistry(healthRegistry).isVerified(requester, IHealthRegistry.Role.Researcher);
-        if (!doctor && !researcher) return false;
-        if (grant.patient != record.patient) return false;
-
         if (grant.patient == address(0)) return false;
         if (grant.revokedStatus == true) return false;
         if (block.timestamp >= grant.endTime) return false;
         if (grant.requester != requester) return false;
         if (grant.recordId != recordId) return false;
+
+        if (!IHealthRegistry(healthRegistry).isVerified(grant.patient, IHealthRegistry.Role.Patient)) return false;
+        bool doctor = IHealthRegistry(healthRegistry).isVerified(requester, IHealthRegistry.Role.Doctor);
+        bool researcher = IHealthRegistry(healthRegistry).isVerified(requester, IHealthRegistry.Role.Researcher);
+        if (!doctor && !researcher) return false;
 
         return true;
     }

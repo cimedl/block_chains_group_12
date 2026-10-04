@@ -1,14 +1,16 @@
-
-> healthcare-p1-p2-draft@0.1.0 test:hashes
-> python -m unittest discover -s test -p "test_*.py" -v
-
 test_file_hash_uses_exact_bytes (test_hash_data.HashDataTest.test_file_hash_uses_exact_bytes) ... ok
 test_fixtures_match_proposed_schema (test_hash_data.HashDataTest.test_fixtures_match_proposed_schema) ... ok
 test_identity_key_order_does_not_matter (test_hash_data.HashDataTest.test_identity_key_order_does_not_matter) ... ok
 test_identity_matches_documented_encoding (test_hash_data.HashDataTest.test_identity_matches_documented_encoding) ... ok
 test_salt_changes_hash (test_hash_data.HashDataTest.test_salt_changes_hash) ... ok
+test_DoctorReceivesBloodPanelWithConsent (test_offchain_service.OffchainServiceTest.test_DoctorReceivesBloodPanelWithConsent) ... Generate a new key and save it to: <temp>\p4-record-zpwx6eje\secret.key
+Encrypted output path: <temp>\p4-record-zpwx6eje\fake-record.enc
+ok
+test_WrongWalletCannotReceiveBloodPanel (test_offchain_service.OffchainServiceTest.test_WrongWalletCannotReceiveBloodPanel) ... Generate a new key and save it to: <temp>\p4-record-bus_jh9h\secret.key
+Encrypted output path: <temp>\p4-record-bus_jh9h\fake-record.enc
+ok
 
 ----------------------------------------------------------------------
-Ran 5 tests in 0.006s
+Ran 7 tests in 1.536s
 
 OK

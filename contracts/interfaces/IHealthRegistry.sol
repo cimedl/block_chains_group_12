@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-// P2 and P3 can use this interface without copying the registry code.
 interface IHealthRegistry {
     enum Role { None, Patient, Doctor, Researcher }
 

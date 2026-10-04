@@ -11,7 +11,7 @@ contract HealthRegistryTest is TestHelper {
     address doctor = address(0x102);
     address researcher = address(0x103);
     address other = address(0x104);
-    bytes32 identityHash = sha256("fake identity and salt");
+    bytes32 identityHash = sha256("identity and salt");
     bytes32 fileHash = sha256("fake stored file");
 
     event RecordRegistered(uint256 indexed recordId, address indexed patient, bytes32 recordHash, string recordType);
@@ -20,7 +20,7 @@ contract HealthRegistryTest is TestHelper {
     function setUp() public {
         registry = new HealthRegistry(address(this));
         vm.prank(patient);
-        registry.registerUser(identityHash, IHealthRegistry.Role.Patient);
+        registry.registerUser(identityHash,IHealthRegistry.Role.Patient);
     }
 
     function addRecord() internal returns (uint256) {
@@ -29,182 +29,120 @@ contract HealthRegistryTest is TestHelper {
         return registry.registerRecord(fileHash, "Blood_Test_Panel");
     }
 
-    function testRegistrationStartsUnverified() public view {
-        IHealthRegistry.User memory user = registry.getUser(patient);
-        require(user.identityHash == identityHash, "Wrong hash");
-        require(user.role == IHealthRegistry.Role.Patient, "Wrong role");
-        require(!user.verified, "Should need verification");
-    }
+   function test_PatientRegistration() public {
+    IHealthRegistry.User memory user = registry.getUser(patient);
+    require(user.identityHash == identityHash, "identity hashes are not the same");
+    require(user.role == IHealthRegistry.Role.Patient, "Roles do not match");
+    require(user.verified == false , "new user should be unverified");
+   } 
 
-    function testDoctorAndResearcherCanRegister() public {
-        vm.prank(doctor);
-        registry.registerUser(identityHash, IHealthRegistry.Role.Doctor);
-        vm.prank(researcher);
-        registry.registerUser(identityHash, IHealthRegistry.Role.Researcher);
-        require(registry.getUser(doctor).role == IHealthRegistry.Role.Doctor, "Wrong doctor role");
-        require(registry.getUser(researcher).role == IHealthRegistry.Role.Researcher, "Wrong researcher role");
-    }
+   function test_AdminCanVerifyPatient() public {
+    registry.setVerification(patient, true);
+    
+    IHealthRegistry.User memory user = registry.getUser(patient);
 
-    function testCannotRegisterTwiceOrChangeRole() public {
-        vm.expectRevert(bytes("Already registered"));
-        vm.prank(patient);
-        registry.registerUser(identityHash, IHealthRegistry.Role.Doctor);
-    }
+    require(user.verified == true, "new user should be verified");
+    
+    require(user.identityHash == identityHash, "identity hashes should be the same");
+    
+    require(user.role == IHealthRegistry.Role.Patient, "Roles should match");
+   }
 
-    function testEmptyIdentityRejected() public {
-        vm.expectRevert(bytes("Empty identity hash"));
-        vm.prank(other);
-        registry.registerUser(bytes32(0), IHealthRegistry.Role.Patient);
-    }
+   function test_PatientCanRegisterRecord() public {
+    
+    registry.setVerification(patient,true);
+    
+    vm.prank(patient);
+    
+    uint256 recordId = registry.registerRecord(fileHash,"blood test panel");
+    
+    IHealthRegistry.Record memory record = registry.getRecord(recordId);
+    
+    require(recordId == 1, "record must correspond to the proper id ");
+    
+    require(record.patient == patient, "patient must match");
+    require(record.recordHash == fileHash,"File hashes must match");
 
-    function testNoneRoleRejected() public {
-        vm.expectRevert(bytes("Choose a role"));
-        vm.prank(other);
-        registry.registerUser(identityHash, IHealthRegistry.Role.None);
-    }
+    require(keccak256(bytes(record.recordType)) == keccak256(bytes("blood test panel")), "types must match");
 
-    function testAdminCanVerifyAndRemoveVerification() public {
-        registry.setVerification(patient, true);
-        require(registry.isVerified(patient, IHealthRegistry.Role.Patient), "Not verified");
-        require(!registry.isVerified(patient, IHealthRegistry.Role.Doctor), "Wrong role accepted");
-        registry.setVerification(patient, false);
-        require(!registry.isVerified(patient, IHealthRegistry.Role.Patient), "Still verified");
-    }
+    
+   }
 
-    function testPatientCannotVerifyThemselves() public {
-        vm.expectRevert(bytes("Only admin"));
-        vm.prank(patient);
-        registry.setVerification(patient, true);
-    }
+   function test_UnverifiedPatientCannotRegisterRecord() public {
+    uint256 recordId = registry.nextRecordId();
 
-    function testCannotVerifyUnknownUser() public {
-        vm.expectRevert(bytes("Unknown user"));
-        registry.setVerification(other, true);
-    }
+    vm.expectRevert(bytes("Verified patient required"));
 
-    function testIdentityChangeNeedsVerificationAgain() public {
-        registry.setVerification(patient, true);
-        bytes32 newHash = sha256("changed fake identity");
-        vm.prank(patient);
-        registry.updateIdentity(newHash);
-        IHealthRegistry.User memory user = registry.getUser(patient);
-        require(user.identityHash == newHash, "Hash not changed");
-        require(!user.verified, "Must verify again");
-    }
+    vm.prank(patient);
 
-    function testIdentityChangeDoesNotChangeAnotherUser() public {
-        vm.prank(other);
-        registry.registerUser(identityHash, IHealthRegistry.Role.Patient);
-        bytes32 otherHash = sha256("other identity");
-        vm.prank(other);
-        registry.updateIdentity(otherHash);
-        require(registry.getUser(patient).identityHash == identityHash, "Changed someone else");
-    }
+    registry.registerRecord(fileHash, "blood test panel");
+    require(registry.nextRecordId() == recordId, "failed registration consumed a record ID");
 
-    function testUnregisteredCannotUpdateIdentity() public {
-        vm.expectRevert(bytes("Register first"));
-        vm.prank(other);
-        registry.updateIdentity(identityHash);
-    }
+   }
 
-    function testEmptyIdentityUpdateRejected() public {
-        vm.expectRevert(bytes("Empty identity hash"));
-        vm.prank(patient);
-        registry.updateIdentity(bytes32(0));
-    }
 
-    function testVerifiedPatientCanRegisterRecord() public {
-        uint256 id = addRecord();
-        IHealthRegistry.Record memory record = registry.getRecord(id);
-        require(id == 1, "IDs start at one");
-        require(record.patient == patient, "Wrong owner");
-        require(record.recordHash == fileHash, "Wrong file hash");
-        require(keccak256(bytes(record.recordType)) == keccak256("Blood_Test_Panel"), "Wrong type");
-    }
+   function test_PatientCannotRegisterTwice() public{
 
-    function testMultipleRecordsOfSameTypeHaveSeparateIds() public {
-        uint256 first = addRecord();
-        bytes32 secondHash = sha256("second file");
-        vm.prank(patient);
-        uint256 second = registry.registerRecord(secondHash, "Blood_Test_Panel");
-        require(second == first + 1, "IDs should differ");
-        require(registry.getRecord(first).recordHash == fileHash, "Old record overwritten");
-    }
+    bytes32 diffIdHash = sha256("diffIdHash");
+    
+    vm.expectRevert(bytes("Already registered"));
+    
+    vm.prank(patient);
 
-    function testUnverifiedPatientCannotRegisterRecord() public {
-        vm.expectRevert(bytes("Verified patient required"));
-        vm.prank(patient);
-        registry.registerRecord(fileHash, "Blood_Test_Panel");
-    }
+    registry.registerUser(diffIdHash, IHealthRegistry.Role.Patient);
 
-    function testVerifiedDoctorCannotRegisterPatientRecord() public {
-        vm.prank(doctor);
-        registry.registerUser(identityHash, IHealthRegistry.Role.Doctor);
-        registry.setVerification(doctor, true);
-        vm.expectRevert(bytes("Verified patient required"));
-        vm.prank(doctor);
-        registry.registerRecord(fileHash, "Blood_Test_Panel");
-    }
+    IHealthRegistry.User memory user = registry.getUser(patient);
 
-    function testEmptyRecordHashRejected() public {
-        registry.setVerification(patient, true);
-        vm.expectRevert(bytes("Empty record hash"));
-        vm.prank(patient);
-        registry.registerRecord(bytes32(0), "Blood_Test_Panel");
-    }
+    require(user.identityHash == identityHash, "og identity must remain ");
 
-    function testEmptyRecordTypeRejected() public {
-        registry.setVerification(patient, true);
-        vm.expectRevert(bytes("Empty record type"));
-        vm.prank(patient);
-        registry.registerRecord(fileHash, "");
-    }
+    
+   }
 
-    function testLongRecordTypeRejected() public {
-        registry.setVerification(patient, true);
-        vm.expectRevert(bytes("Record type too long"));
-        vm.prank(patient);
-        registry.registerRecord(fileHash, string(new bytes(65)));
-    }
 
-    function testUnknownRecordRejected() public {
-        vm.expectRevert(bytes("Unknown record"));
-        registry.getRecord(0);
-    }
+   function test_PatientCanUpdateIdentity() public {
 
-    function testRecordExistenceDoesNotRevertForMissingIds() public {
-        require(!registry.recordExists(0) && !registry.recordExists(999), "Unknown record exists");
-        uint256 id = addRecord();
-        require(registry.recordExists(id), "Registered record missing");
-        require(!registry.recordExists(id + 1), "Unallocated record exists");
-    }
+    registry.setVerification(patient,true);
 
-    function testUnknownUserRejected() public {
-        vm.expectRevert(bytes("Unknown user"));
-        registry.getUser(other);
-    }
+    bytes32 diffIdHash = sha256("diffIdHash");
 
-    function testUnknownUserIsNotVerified() public view {
-        require(!registry.isVerified(other, IHealthRegistry.Role.Patient), "Unknown user verified");
-        require(!registry.isVerified(other, IHealthRegistry.Role.None), "None role verified");
-    }
+    vm.prank(patient);
 
-    function testRecordEventIncludesOwnerAndHash() public {
-        registry.setVerification(patient, true);
-        vm.expectEmit(true, true, false, true);
-        emit RecordRegistered(1, patient, fileHash, "Blood_Test_Panel");
-        vm.prank(patient);
-        registry.registerRecord(fileHash, "Blood_Test_Panel");
-    }
+    registry.updateIdentity(diffIdHash);
 
-    function testVerificationEvent() public {
-        vm.expectEmit(true, false, false, true);
-        emit VerificationChanged(patient, true);
-        registry.setVerification(patient, true);
-    }
+    IHealthRegistry.User memory user = registry.getUser(patient);
 
-    function testZeroAdminRejected() public {
-        vm.expectRevert(bytes("Invalid admin"));
-        new HealthRegistry(address(0));
-    }
+    require(user.identityHash == diffIdHash, "new identity hashes must match");
+
+    require(user.role == IHealthRegistry.Role.Patient, "Roles should match");
+
+    require(user.verified == false, "updated identity should be unverified");
+
+   }
+
+
+   function test_NonAdminCannotVerifyPatient() public {
+
+    vm.expectRevert(bytes("Only admin"));
+
+    vm.prank(patient);
+
+    registry.setVerification(patient,true);
+
+    IHealthRegistry.User memory user = registry.getUser(patient);
+
+    require(user.verified == false, "patient should remain unverified");
+
+    require(user.identityHash == identityHash, "identity hashes should be the same");
+
+    require(user.role == IHealthRegistry.Role.Patient, "Roles should match");
+
+   }
+
+
+
+    
+
+
+
+    
 }

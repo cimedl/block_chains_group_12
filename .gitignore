@@ -1,18 +1,54 @@
+# Dependencies, build output and environments
 node_modules/
 artifacts/
 cache/
 dist/
 .venv/
 __pycache__/
-.local/
-*.zip
+*.py[cod]
 
-# TODO: review the added IDE and P3 runtime exclusions below.
-# Local IDE and P3 runtime files
-.idea/
+# Private local runtime data, keys and secrets
+.local/
 data/secret.key
 data/*.enc
 *.db
 *.db-journal
 *.db-wal
 *.db-shm
+.env
+.env.*
+!.env.example
+*.key
+*.log
+*.tmp
+*.bak
+*~
+*.zip
+
+# Editor and tool metadata
+.idea/
+.vscode/
+.codex/
+.agents/
+.claude/
+.DS_Store
+Thumbs.db
+
+# Internal team documents, review tooling and merge history (not part of the submission)
+/docs/
+/.githooks/
+/.gitattributes
+/test/AccessDecisionFixture.sol
+
+# Scripts: keep only the deployment script and the hashing helper used by the tests
+/scripts/*
+!/scripts/deploy.mjs
+!/scripts/hash_data.py
+
+# Results: keep only the files used in the report; all earlier runs and merge results stay local
+/results/*
+!/results/test-results-all-tests-with-why-critical.csv
+!/results/solidity-unit-tests-output.txt
+!/results/python-hashing-and-integration-tests-output.txt
+!/results/gas-deployment-and-function-costs.csv
+!/results/scaling-time-and-cost-by-number-of-users.csv

@@ -1,0 +1,22 @@
+test,status,source,why_critical
+test_PatientCannotGetRewardTwice,Passed,test/ConsentReward.t.sol,Pay once per record/requester pair while preserving independent requester eligibility.
+test_OnlyAdminCanSetManagerAndOnlyManagerCanReward,Passed,test/ConsentReward.t.sol,Prevent ordinary wallets from selecting an issuer or minting their own points.
+test_UnverifiedPatientCannotRegisterRecord,Passed,test/HealthRegistry.t.sol,Reject unverified record publication without consuming an id.
+test_PatientRegistration,Passed,test/HealthRegistry.t.sol,Store the patient's identity commitment and role without granting verification automatically.
+test_PatientCannotRegisterTwice,Passed,test/HealthRegistry.t.sol,Prevent a second signup from overwriting the original identity.
+test_PatientCanUpdateIdentity,Passed,test/HealthRegistry.t.sol,Require verification again after identity details change.
+test_PatientCanRegisterRecord,Passed,test/HealthRegistry.t.sol,Associate the blood-panel commitment and type with its correct patient.
+test_NonAdminCannotVerifyPatient,Passed,test/HealthRegistry.t.sol,Prevent patients from approving their own verification.
+test_AdminCanVerifyPatient,Passed,test/HealthRegistry.t.sol,Only a reviewed identity should become eligible for verified-patient operations.
+test_RevokedAndExpiredConsentBlocksAccess,Passed,test/ConsentManager.t.sol,Stop access at expiry or withdrawal and prevent repeated renewal rewards.
+test_PatientCanGrantAccess,Passed,test/ConsentManager.t.sol,"Give only the chosen doctor scoped, time-limited access while retaining patient ownership."
+test_NonOwnerCannotGrantOrRevokeAccess,Passed,test/ConsentManager.t.sol,Keep the patient's disclosure decisions under the patient's control.
+test_ConsentDurationLimits,Passed,test/ConsentManager.t.sol,Enforce the assignment's 1-365-day consent duration boundaries.
+test_AccessRequestsAreLogged,Passed,test/ConsentManager.t.sol,Retain allowed and denied decisions without charging/moving reward points.
+test_file_hash_uses_exact_bytes,Passed,test/test_hash_data.py,Make any stored-byte change affect the record commitment.
+test_fixtures_match_proposed_schema,Passed,test/test_hash_data.py,Keep the provided identity/record fixtures synthetic and consistently structured.
+test_identity_key_order_does_not_matter,Passed,test/test_hash_data.py,Make identity commitments independent of JSON key ordering.
+test_identity_matches_documented_encoding,Passed,test/test_hash_data.py,Use a repeatable identity serialization and SHA-256 commitment.
+test_salt_changes_hash,Passed,test/test_hash_data.py,Prevent two differently salted identity fixtures from sharing a commitment.
+test_DoctorReceivesBloodPanelWithConsent,Passed,test/test_offchain_service.py,"Establish real authorized delivery, decryption and persistent consumption."
+test_WrongWalletCannotReceiveBloodPanel,Passed,test/test_offchain_service.py,Reject another wallet's signature without consuming the doctor's authorization.

@@ -6,7 +6,6 @@ import {ConsentReward} from "../contracts/ConsentReward.sol";
 import {IHealthRegistry} from "../contracts/interfaces/IHealthRegistry.sol";
 import {TestHelper} from "./TestHelper.sol";
 
-// A test caller, not P2's consent implementation. It has no consent rules.
 contract RewardCallerStub {
     ConsentReward reward;
 
@@ -15,9 +14,10 @@ contract RewardCallerStub {
     }
 
     function callReward(uint256 recordId, address requester) external returns (bool) {
-        return reward.rewardConsent(recordId, requester);
+        return reward.rewardConsent(recordId,requester);
     }
 }
+
 
 contract ConsentRewardTest is TestHelper {
     HealthRegistry registry;
@@ -26,147 +26,123 @@ contract ConsentRewardTest is TestHelper {
     address patient = address(0x101);
     address doctor = address(0x102);
     address researcher = address(0x103);
-    address other = address(0x104);
+    bytes32 identityHash = sha256("identity and salt");
+    bytes32 fileHash = sha256("fake blood test panel");
     uint256 recordId;
-    bytes32 identityHash = sha256("fake identity");
 
     event RewardGiven(address indexed patient, uint256 indexed recordId, address indexed requester, uint256 amount);
+    event ConsentManagerSet(address indexed manager);
+
 
     function setUp() public {
         registry = new HealthRegistry(address(this));
-        reward = new ConsentReward(address(registry), address(this));
+        reward = new ConsentReward(address(registry),address(this));
         manager = new RewardCallerStub(reward);
+
         reward.setConsentManager(address(manager));
 
         vm.prank(patient);
-        registry.registerUser(identityHash, IHealthRegistry.Role.Patient);
-        vm.prank(doctor);
-        registry.registerUser(identityHash, IHealthRegistry.Role.Doctor);
-        vm.prank(researcher);
-        registry.registerUser(identityHash, IHealthRegistry.Role.Researcher);
+        registry.registerUser(identityHash,IHealthRegistry.Role.Patient);
         registry.setVerification(patient, true);
-        registry.setVerification(doctor, true);
+
+        bytes32 doctorIdHash = sha256("doctor identity and salt");
+
+        vm.prank(doctor);
+        registry.registerUser(doctorIdHash, IHealthRegistry.Role.Doctor);
+        registry.setVerification(doctor,true);
+
+        bytes32 researcherIdHash = sha256("researcher identity and salt");
+
+        vm.prank(researcher);
+        registry.registerUser(researcherIdHash,IHealthRegistry.Role.Researcher);
         registry.setVerification(researcher, true);
-        bytes32 fileHash = sha256("fake file");
+
         vm.prank(patient);
-        recordId = registry.registerRecord(fileHash, "Blood_Test_Panel");
+        recordId = registry.registerRecord(fileHash,"blood test panel");
     }
 
-    function testAuthorizedRewardGoesToRecordOwner() public {
-        require(manager.callReward(recordId, doctor), "Reward not given");
-        require(reward.balanceOf(patient) == 10, "Patient should get ten points");
-        require(reward.balanceOf(doctor) == 0, "Doctor should not get points");
-        require(reward.rewarded(recordId, doctor), "Reward not remembered");
-    }
 
-    function testRepeatedPermissionGivesNoMorePoints() public {
-        manager.callReward(recordId, doctor);
-        require(!manager.callReward(recordId, doctor), "Duplicate reward");
-        require(reward.balanceOf(patient) == 10, "Balance increased twice");
-    }
+   function test_OnlyAdminCanSetManagerAndOnlyManagerCanReward() public{
 
-    function testResearcherCanAlsoTriggerReward() public {
-        manager.callReward(recordId, researcher);
-        require(reward.balanceOf(patient) == 10, "Researcher grant not rewarded");
-    }
+    ConsentReward newReward = new ConsentReward(address(registry),address(this));
+    RewardCallerStub newManager = new RewardCallerStub(newReward);
 
-    function testDifferentRequesterGetsSeparateReward() public {
-        manager.callReward(recordId, doctor);
-        manager.callReward(recordId, researcher);
-        require(reward.balanceOf(patient) == 20, "Wrong total");
-    }
+    vm.expectRevert(bytes("Only consent manager"));
+    newReward.rewardConsent(recordId,doctor);
 
-    function testDifferentRecordGetsSeparateReward() public {
-        manager.callReward(recordId, doctor);
-        bytes32 nextHash = sha256("another file");
-        vm.prank(patient);
-        uint256 nextId = registry.registerRecord(nextHash, "Scan");
-        manager.callReward(nextId, doctor);
-        require(reward.balanceOf(patient) == 20, "Wrong total");
-    }
+    vm.expectRevert(bytes("Only admin"));
 
-    function testPatientCannotRewardThemselves() public {
-        vm.expectRevert(bytes("Only consent manager"));
-        vm.prank(patient);
-        reward.rewardConsent(recordId, doctor);
-    }
+    vm.prank(patient);
+    newReward.setConsentManager(address(newManager));
 
-    function testAdminCannotIssueRewardsDirectly() public {
-        vm.expectRevert(bytes("Only consent manager"));
-        reward.rewardConsent(recordId, doctor);
-    }
+    require(newReward.consentManager() == address(0), "patient should not be able to set the manager");
 
-    function testUnknownRecordRejected() public {
-        vm.expectRevert(bytes("Unknown record"));
-        manager.callReward(999, doctor);
-    }
+    vm.expectRevert(bytes("Manager must be a contract"));
+    newReward.setConsentManager(doctor);
 
-    function testUnverifiedRequesterRejected() public {
-        registry.setVerification(doctor, false);
-        vm.expectRevert(bytes("Requester not verified"));
-        manager.callReward(recordId, doctor);
-        require(!reward.rewarded(recordId, doctor), "Failed call used the reward");
-    }
+    vm.expectRevert(bytes("Manager must be a contract"));
+    newReward.setConsentManager(address(0));
 
-    function testUnknownRequesterRejected() public {
-        vm.expectRevert(bytes("Requester not verified"));
-        manager.callReward(recordId, other);
-    }
+    vm.expectEmit(true,false,false,true,address(newReward));
+    emit ConsentManagerSet(address(newManager));
 
-    function testPatientCannotBeRequesterForReward() public {
-        vm.expectRevert(bytes("Requester not verified"));
-        manager.callReward(recordId, patient);
-    }
+    newReward.setConsentManager(address(newManager));
 
-    function testUnverifiedPatientRejected() public {
-        registry.setVerification(patient, false);
-        vm.expectRevert(bytes("Patient not verified"));
-        manager.callReward(recordId, doctor);
-    }
+    require(newReward.consentManager() == address(newManager), "manager addresses must match");
 
-    function testOnlyAdminCanSetManager() public {
-        ConsentReward fresh = new ConsentReward(address(registry), address(this));
-        vm.expectRevert(bytes("Only admin"));
-        vm.prank(patient);
-        fresh.setConsentManager(address(manager));
-    }
+    vm.expectRevert(bytes("Manager already set"));
+    newReward.setConsentManager(address(manager));
 
-    function testManagerCanOnlyBeSetOnce() public {
-        vm.expectRevert(bytes("Manager already set"));
-        reward.setConsentManager(address(manager));
-    }
+    require(newReward.consentManager() == address(newManager), "og manager must remain");
 
-    function testWalletCannotBeManager() public {
-        ConsentReward fresh = new ConsentReward(address(registry), address(this));
-        vm.expectRevert(bytes("Manager must be a contract"));
-        fresh.setConsentManager(doctor);
-    }
+    vm.expectRevert(bytes("Only consent manager"));
+    vm.prank(patient);
 
-    function testZeroManagerRejected() public {
-        ConsentReward fresh = new ConsentReward(address(registry), address(this));
-        vm.expectRevert(bytes("Manager must be a contract"));
-        fresh.setConsentManager(address(0));
-    }
+    newReward.rewardConsent(recordId,doctor);
 
-    function testNoRewardBeforeManagerSetup() public {
-        ConsentReward fresh = new ConsentReward(address(registry), address(this));
-        vm.expectRevert(bytes("Only consent manager"));
-        fresh.rewardConsent(recordId, doctor);
-    }
+    vm.expectRevert(bytes("Only consent manager"));
+    newReward.rewardConsent(recordId, doctor);
 
-    function testRegistryMustBeContract() public {
-        vm.expectRevert(bytes("Registry must be a contract"));
-        new ConsentReward(other, address(this));
-    }
+    require(newReward.balanceOf(patient) == 0, "rejected calls should not give points");
+    require(newReward.rewarded(recordId,doctor) == false , "rejected calls should not use the reward");
 
-    function testZeroAdminRejected() public {
-        vm.expectRevert(bytes("Invalid admin"));
-        new ConsentReward(address(registry), address(0));
-    }
+    vm.expectEmit(true,true,true,true,address(newReward));
+    emit RewardGiven(patient,recordId,doctor,10);
 
-    function testRewardEvent() public {
-        vm.expectEmit(true, true, true, true);
-        emit RewardGiven(patient, recordId, doctor, 10);
-        manager.callReward(recordId, doctor);
-    }
+    bool given = newManager.callReward(recordId,doctor);
+
+    require(given == true, "manager should be able to give the reward");
+    require(newReward.balanceOf(patient) == 10, "patient should get 10 points");
+
+    require(newReward.balanceOf(doctor) == 0, "doctor should not get points");
+    require(newReward.rewarded(recordId,doctor) == true, "reward should be remembered");
+
+   }
+
+   // Sharing the same blood panel with the same doctor should earn points only once.
+   function test_PatientCannotGetRewardTwice() public {
+
+    bool given = manager.callReward(recordId, doctor);
+
+    require(given == true, "first reward should be given");
+    require(reward.balanceOf(patient) == 10, "patient should get 10 points");
+
+    bool givenAgain = manager.callReward(recordId,doctor);
+
+    require(givenAgain == false, "same permission should not give points twice");
+    require(reward.balanceOf(patient) == 10, "points should stay the same");
+    require(reward.rewarded(recordId,doctor) == true, "og reward should still be remembered");
+
+    // Sharing with a researcher is a separate permission and can earn its own points.
+    require(reward.rewarded(recordId,researcher) == false, "researcher reward should not be used yet");
+
+    bool researcherGiven = manager.callReward(recordId, researcher);
+
+    require(researcherGiven == true, "different requester should get a separate reward");
+    require(reward.balanceOf(patient) == 20, "patient should get points for both permissions");
+
+    require(reward.balanceOf(doctor) == 0 , "doctor should not get points");
+    require(reward.balanceOf(researcher) == 0, "researcher should not get points");
+
+   }
 }

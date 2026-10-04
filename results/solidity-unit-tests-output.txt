@@ -1,0 +1,27 @@
+No contracts to compile
+
+Running Solidity tests
+
+  test/ConsentReward.t.sol:ConsentRewardTest
+    ✔ test_PatientCannotGetRewardTwice()
+    ✔ test_OnlyAdminCanSetManagerAndOnlyManagerCanReward()
+
+  test/HealthRegistry.t.sol:HealthRegistryTest
+    ✔ test_UnverifiedPatientCannotRegisterRecord()
+    ✔ test_PatientRegistration()
+    ✔ test_PatientCannotRegisterTwice()
+    ✔ test_PatientCanUpdateIdentity()
+    ✔ test_PatientCanRegisterRecord()
+    ✔ test_NonAdminCannotVerifyPatient()
+    ✔ test_AdminCanVerifyPatient()
+
+  test/ConsentManager.t.sol:ConsentManagerTest
+    ✔ test_RevokedAndExpiredConsentBlocksAccess()
+    ✔ test_PatientCanGrantAccess()
+    ✔ test_NonOwnerCannotGrantOrRevokeAccess()
+    ✔ test_ConsentDurationLimits()
+    ✔ test_AccessRequestsAreLogged()
+
+
+  14 passing
+

@@ -1,31 +1,46 @@
-# Healthcare P1 + P2 integration
+# Healthcare decentralized identity and data sharing
 
-HealthRegistry, ConsentManager and ConsentReward now compile and work together.
-Patients register immutable record commitments, grant a verified Doctor or Researcher
-access for 1-365 days, receive eligible reward points, and revoke their own grants.
-Access requests record allowed and denied decisions. A Python file service is still
-needed to authenticate users and deliver private files.
+HealthRegistry, ConsentManager and ConsentReward work together on a local Hardhat
+network. Patients register hashed identities and immutable record commitments, grant a
+verified Doctor or Researcher access for 1-365 days, receive reward points, and revoke
+their own grants. Every access request records an allowed or denied decision on-chain.
+A Python service delivers the encrypted record off-chain only to a requester with valid
+consent and a matching wallet signature.
+
+## Project structure
+
+| Path | Contents |
+| --- | --- |
+| `contracts/HealthRegistry.sol` | User registration (hashed identity + role), admin verification, record commitments |
+| `contracts/ConsentManager.sol` | Consent grant/revoke, access requests and the `AccessDecision` audit events |
+| `contracts/ConsentReward.sol` | Non-transferable reward points for granting consent |
+| `contracts/interfaces/` | Shared interfaces between the contracts |
+| `offchain/` | Hashing, encryption, signed-request verification and SQLite replay protection |
+| `scripts/deploy.mjs` | Deploys and wires the three contracts on the local node |
+| `scripts/hash_data.py` | Computes identity and record hashes |
+| `test/*.t.sol` | Solidity unit tests, one file per contract |
+| `test/test_*.py` | Python hashing tests and the end-to-end delivery integration test |
+| `data/` | Synthetic (fake) identity and record fixtures; no real personal data |
+| `results/` | Test, gas and scaling results used in the report |
 
 ## Setup and tests
 
-Use a supported even-numbered Node.js release at least 22.13 and Python 3.
-Python hashing helpers use only the standard library. The scripts expect `python`
-to select Python 3; if your system only provides `python3`, run the equivalent
-unittest/hash commands with that executable.
+Use a supported even-numbered Node.js release (at least 22.13) and Python 3.13.
+Use the virtual environment's interpreter explicitly so a different default Python
+installation does not load its native packages.
 
-```sh
+```powershell
 npm ci
+py -3.13 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 npm run compile
 npm test
-npm run test:hashes
-npm run sample
+.\.venv\Scripts\python.exe -m unittest discover -s test -p "test_*.py" -v
+.\.venv\Scripts\python.exe scripts/hash_data.py
 ```
 
-Verified on the environment recorded in `results/p1-p2-fixes/validation.json`:
-88 Solidity tests and 5 Python hashing tests pass. Solidity tests instantiate the
-real registry, manager and reward contracts; no separate blockchain node is needed
-for those tests. The sample hashes a synthetic plaintext fixture; it does not encrypt
-or deliver a medical record.
+`npm test` runs the Solidity unit tests. The Python command runs the hashing tests and
+the delivery integration test, which starts and stops its own temporary Hardhat node.
 
 ## Local deployment
 
@@ -41,73 +56,50 @@ In another terminal, deploy and configure the three contracts:
 npm run deploy
 ```
 
-The script uses Node's built-in modules and the local unlocked deployment account.
-It deploys registry -> reward -> manager, sets the reward's authorized manager, checks
-all dependency addresses, and writes addresses, ABIs and receipts to
+The script deploys registry -> reward -> manager, sets the reward's authorized manager,
+checks all dependency addresses, and writes addresses, ABIs and receipts to
 `.local/deployment.json`. To use a different local port, pass its URL after `--`.
-A stopped/reset local node invalidates that deployment; rerun deployment for a fresh
-node. The recorded smoke check used a temporary node, which was stopped afterwards.
-The script deploys/configures contracts; it does not seed users or run file delivery.
+A stopped or reset local node invalidates that deployment; rerun deployment for a fresh node.
 
-## Rules and interfaces
+## Results
+
+| File | What it shows |
+| --- | --- |
+| `results/test-results-all-tests-with-why-critical.csv` | Pass/fail of every unit and integration test, and why each tested function matters |
+| `results/solidity-unit-tests-output.txt` | Raw output of the Solidity unit tests |
+| `results/python-hashing-and-integration-tests-output.txt` | Raw output of the Python hashing and delivery integration tests |
+| `results/gas-deployment-and-function-costs.csv` | Deployment cost per contract and average gas per function |
+| `results/scaling-time-and-cost-by-number-of-users.csv` | Total gas, transactions and time for 5, 20 and 50 patients (3 runs each) |
+
+Gas and timing values are from a local auto-mining Hardhat node, not a public network.
+
+## Rules
 
 - IDs are registry-generated `uint256` values, not file hashes.
-- `grantAccess(recordId, category, requester, durationDays)` returns a new grant ID.
-  The category must exactly match the record's stored type. Equivalent active grants
-  are rejected. After revocation or expiry, regrant gets a fresh ID.
+- `grantAccess(recordId, category, requester, durationDays)` emits the new grant ID
+  in `ConsentGranted`. The category must exactly match the record's stored type.
+  Repeated grants receive separate IDs. Revoking one grant does not revoke the others.
 - Only the record owner can grant or revoke. Suspended patients may still revoke.
 - Both patient and requester must be currently verified for permission to succeed.
   Requesters must be Doctors or Researchers. Identity updates clear verification.
 - Permission is expired at `block.timestamp == endTime`.
-- `requestAccess(recordId, grantId)` returns a contract-allocated request ID and emits
-  `AccessDecision`. Ordinary denials do not revert. `checkPermission` previews the same
-  rules without creating an event or consuming an ID.
-- P1's reward policy remains 10 non-transferable points per first record/requester
-  pair. Renewal/regrant earns no repeat reward; new records can earn separate rewards.
-  Access and revocation do not move points. This differs from the earlier roadmap's
-  per-category proposal; team report/test expectations must use the actual policy.
+- `requestAccess(recordId, grantId)` emits a contract-allocated request ID in
+  `AccessDecision`. Ordinary denials do not revert, so failed attempts are logged too.
+  `checkPermission` previews the same rules without creating an event.
+- The reward policy is 10 non-transferable points per first record/requester pair.
+  Renewal earns no repeat reward. Access and revocation do not move points.
 
-Read [shared interfaces](docs/interfaces.md), [healthcare architecture](docs/healthcare-architecture.md),
-[fixes and evidence](docs/p1-p2-fixes.md), and the [P1 handoff](docs/P1-HANDOFF.md).
-The [original merge report](docs/p1-p2-merge-report.md) describes the historical merge
-state before these repairs. Old `results/*.txt` and `results/p1-p2-merge/` logs remain
-historical evidence, not the current test outcome.
+## Off-chain delivery
 
-## Limits and historical material
+Register each record's private file and key paths with `register_record_file`, then obtain
+a message using `issue_delivery_challenge` and sign that exact message. Challenges expire
+after five minutes and are consumed with the access receipt. Decryption requires an
+existing key and uses the verified ciphertext bytes. A claimed request stays consumed
+after a decryption failure; a new access request is needed to retry.
 
-The blockchain records permission decisions, not proof a person downloaded/read a
-file. P3 must implement authenticated receipt redemption, current-grant checks,
-integrity verification, replay protection and private file delivery. Use only
-synthetic records. Admin verification is a manual demo flag, not proof of a medical
-license or identity; hashes do not prove a clinic issued a record.
+## Limits
 
-<!-- TODO: review the education cleanup and current dependency note. -->
-`requirements.txt` supplies the healthcare P3 dependencies. The inherited education
-contract, demos, archive, diagrams, and saved education outputs have been removed.
-Review and understand the changes,
-record individual contributions, and disclose AI assistance in the course report.
-
-<!-- TODO: review the P3 integration notes added below. -->
-## P3 delivery service integration
-
-`offchain/` now contains P3 encryption, signed-request verification, on-chain
-permission checks, file-integrity checks, and SQLite receipt-consumption tracking.
-Install its dependencies with `python -m pip install -r requirements.txt`; the
-standard-library hashing helpers above still need no additional dependencies.
-The earlier P3 implementation requirements describe the pre-merge state.
-The delivery service is a draft and still needs the review and end-to-end checks
-listed in [the pre-push TODO checklist](docs/p3-merge-todo.md).
-
-<!-- TODO: review the added local push-review instructions below. -->
-## Required review before pushing
-
-Normal local Git pushes are blocked by .githooks/pre-push until every item in
-[docs/p3-merge-todo.md](docs/p3-merge-todo.md), including the final review sign-off,
-is checked and committed. Check an item only after reviewing it or explicitly
-accepting the remaining issue. Review comments use each language's valid syntax;
-JSON and saved results are covered by the checklist.
-
-The guard also blocks uncommitted edits to the reviewed files. It is active in
-this checkout through the local core.hooksPath setting. Another clone must run
-`git config --local core.hooksPath .githooks` to activate it. This is a local Git
-hook, not a server-enforced rule.
+The blockchain records permission decisions, not proof that a person downloaded or read a
+file. Local SQLite delivery records can be changed and are not tamper-proof. Revocation
+cannot erase copies already delivered. Admin verification is a manual flag, not proof of a
+medical license or identity. Use only synthetic records.

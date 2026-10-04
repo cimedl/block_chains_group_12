@@ -93,4 +93,7 @@ contract HealthRegistry is IHealthRegistry {
         }
         return users[account].role == role && users[account].verified;
     }
+
+    
+    
 }

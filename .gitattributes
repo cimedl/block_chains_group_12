@@ -1,2 +1,0 @@
-# TODO: review LF line endings required by the added shell hook.
-.githooks/pre-push text eol=lf

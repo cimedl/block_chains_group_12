@@ -1,7 +1,0 @@
-
-> healthcare-p1-p2-draft@0.1.0 sample
-> python scripts/hash_data.py
-
-Identity hash: 0xa2160176b0e99bc6f076ae9b4b4e09d73797ba616a9a490a38802b1279090d49
-Plaintext fixture hash: 0x2aac92fc0470c07e53b23b8bb7f1cd4f9ea96621613fabe215fee4d46682c15e
-For real integration, encrypt the record first, then hash the encrypted file.

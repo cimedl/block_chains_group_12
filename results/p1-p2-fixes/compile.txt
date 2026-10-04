@@ -1,5 +1,0 @@
-
-> healthcare-p1-p2-draft@0.1.0 compile
-> hardhat compile
-
-No contracts to compile
