@@ -40,10 +40,14 @@ Thumbs.db
 /.gitattributes
 /test/AccessDecisionFixture.sol
 
-# keep the deployment and hashing scripts
+# keep deployment, hashing, test and measurement scripts
 /scripts/*
 !/scripts/deploy.mjs
 !/scripts/hash_data.py
+!/scripts/p4_verify.py
+!/scripts/p4_benchmark.py
+!/scripts/p4_report.py
+!/scripts/healthcare_demo.py
 
 # keep the results used in the report
 /results/*

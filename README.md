@@ -18,6 +18,10 @@ consent and a matching wallet signature.
 | `offchain/` | Hashing, encryption, signed-request verification and SQLite replay protection |
 | `scripts/deploy.mjs` | Deploys and wires the three contracts on the local node |
 | `scripts/hash_data.py` | Computes identity and record hashes |
+| `scripts/p4_verify.py` | Runs all Solidity and Python tests and records outcomes and source hashes |
+| `scripts/p4_benchmark.py` | Measures gas and timing for synthetic multi-user workloads |
+| `scripts/p4_report.py` | Builds test, gas and scaling tables from matching verification and benchmark runs |
+| `scripts/healthcare_demo.py` | Demonstrates registration, delivery, replay rejection and revocation |
 | `test/*.t.sol` | Solidity unit tests, one file per contract |
 | `test/test_*.py` | Python hashing tests and the end-to-end delivery integration test |
 | `data/` | Synthetic (fake) identity and record fixtures; no real personal data |
@@ -42,6 +46,21 @@ npm test
 `npm test` runs the Solidity unit tests. The Python command runs the hashing tests and
 the delivery integration test, which starts and stops its own temporary Hardhat node.
 
+To run all tests and regenerate measurement tables, run these commands in order:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/p4_verify.py
+.\.venv\Scripts\python.exe scripts/p4_benchmark.py --users 5 20 50 --repetitions 3
+.\.venv\Scripts\python.exe scripts/p4_report.py
+```
+
+Verification and benchmarking start and stop their own temporary local nodes. Raw
+results are saved under `results/p4-current/` and `results/p4-evaluation/`; each
+directory's `latest.json` selects the most recent run. The report generator rejects
+verification and measurements from different application sources, then writes a
+Markdown report and three CSV tables under `results/p4-generated/`. Generated runs
+are ignored by Git and do not replace the committed report evidence.
+
 ## Local deployment
 
 Start the local blockchain in one terminal:
@@ -60,6 +79,12 @@ The script deploys registry -> reward -> manager, sets the reward's authorized m
 checks all dependency addresses, and writes addresses, ABIs and receipts to
 `.local/deployment.json`. To use a different local port, pass its URL after `--`.
 A stopped or reset local node invalidates that deployment; rerun deployment for a fresh node.
+
+With that node still running, demonstrate the complete synthetic workflow:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/healthcare_demo.py
+```
 
 ## Results
 
