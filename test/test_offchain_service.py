@@ -21,9 +21,7 @@ from encrypt_record import encrypt_record_file
 from offchain_service import MedicalDataDeliveryService
 
 
-
 class OffchainServiceTest(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         contracts = ("HealthRegistry", "ConsentReward", "ConsentManager")
@@ -77,7 +75,6 @@ class OffchainServiceTest(unittest.TestCase):
                 cls.node.kill()
                 cls.node.wait(timeout=5)
 
-
     def setUp(self):
         self.folder = tempfile.TemporaryDirectory(prefix="p4-record-")
         self.addCleanup(self.folder.cleanup)
@@ -93,12 +90,11 @@ class OffchainServiceTest(unittest.TestCase):
         identityHash = hashlib.sha256(b"synthetic patient identity and salt").digest()
         doctorIdHash = hashlib.sha256(b"synthetic doctor identity and salt").digest()
 
-        # Role.Patient is 1 and Role.Doctor is 2 in IHealthRegistry.
+        # registry roles: patient 1, doctor 2
         self.send(self.registry.functions.registerUser(identityHash,1), self.patient)
         self.send(self.registry.functions.setVerification(self.patient, True), self.admin)
         self.send(self.registry.functions.registerUser(doctorIdHash, 2), self.doctor)
         self.send(self.registry.functions.setVerification(self.doctor,True), self.admin)
-
 
     def send(self, function, sender):
         txHash = function.transact({"from": sender})
@@ -116,7 +112,6 @@ class OffchainServiceTest(unittest.TestCase):
 
         return self.w3.eth.contract(address=receipt.contractAddress, abi=artifact["abi"])
 
-
     def test_DoctorReceivesBloodPanelWithConsent(self):
         record = {
             "synthetic": True,
@@ -129,7 +124,7 @@ class OffchainServiceTest(unittest.TestCase):
         keyPath = self.data / "secret.key"
         recordPath.write_text(json.dumps(record), encoding="utf-8")
 
-        # The delivery service commits to the encrypted file, rather than the JSON text.
+        # chain stores the hash of encrypted bytes
         fileHash = encrypt_record_file(str(recordPath),str(encPath), str(keyPath))
         receipt = self.send(
             self.registry.functions.registerRecord(bytes.fromhex(fileHash[2:]), "blood test panel"),
@@ -169,7 +164,6 @@ class OffchainServiceTest(unittest.TestCase):
         )
         service.register_record_file(recordId, str(encPath), str(keyPath))
 
-        # The service issues a single-use challenge; the doctor signs it with the temporary node's wallet.
         challenge = service.issue_delivery_challenge(recordId, self.doctor, Web3.to_hex(receipt.transactionHash), str(requestId))
         signature = self.w3.eth.sign(self.doctor, text=challenge)
         signer = Account.recover_message(encode_defunct(text=challenge), signature=signature)
@@ -188,7 +182,6 @@ class OffchainServiceTest(unittest.TestCase):
         self.assertTrue(service.db.is_consumed(str(requestId)), "successful delivery should consume the request")
         self.assertEqual(self.reward.functions.balanceOf(self.patient).call(), 10, "patient should get 10 points")
         self.assertEqual(self.reward.functions.balanceOf(self.doctor).call(), 0, "doctor should not need points for access")
-
 
     def test_WrongWalletCannotReceiveBloodPanel(self):
         record = {
@@ -227,7 +220,7 @@ class OffchainServiceTest(unittest.TestCase):
         )
         service.register_record_file(recordId, str(encPath), str(keyPath))
 
-        # Claim to be the doctor, but sign the doctor's challenge using the patient's wallet.
+        # patient signs the doctor's challenge
         challenge = service.issue_delivery_challenge(recordId, self.doctor, Web3.to_hex(receipt.transactionHash), str(requestId))
         signature = self.w3.eth.sign(self.patient, text=challenge)
         signer = Account.recover_message(encode_defunct(text=challenge), signature=signature)
@@ -249,7 +242,7 @@ class OffchainServiceTest(unittest.TestCase):
 
         self.assertFalse(service.db.is_consumed(str(requestId)), "wrong wallet should not consume the doctor's request")
 
-        # The same receipt should still work when the doctor supplies their own proof.
+        # rejected signature should leave the request usable
         doctorSignature = self.w3.eth.sign(self.doctor, text=challenge)
         request["signature"] = Web3.to_hex(doctorSignature)
         delivered = service.request_record_delivery(**request)

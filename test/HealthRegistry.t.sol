@@ -34,38 +34,37 @@ contract HealthRegistryTest is TestHelper {
     require(user.identityHash == identityHash, "identity hashes are not the same");
     require(user.role == IHealthRegistry.Role.Patient, "Roles do not match");
     require(user.verified == false , "new user should be unverified");
-   } 
+   }
 
    function test_AdminCanVerifyPatient() public {
     registry.setVerification(patient, true);
-    
+
     IHealthRegistry.User memory user = registry.getUser(patient);
 
     require(user.verified == true, "new user should be verified");
-    
+
     require(user.identityHash == identityHash, "identity hashes should be the same");
-    
+
     require(user.role == IHealthRegistry.Role.Patient, "Roles should match");
    }
 
    function test_PatientCanRegisterRecord() public {
-    
+
     registry.setVerification(patient,true);
-    
+
     vm.prank(patient);
-    
+
     uint256 recordId = registry.registerRecord(fileHash,"blood test panel");
-    
+
     IHealthRegistry.Record memory record = registry.getRecord(recordId);
-    
+
     require(recordId == 1, "record must correspond to the proper id ");
-    
+
     require(record.patient == patient, "patient must match");
     require(record.recordHash == fileHash,"File hashes must match");
 
     require(keccak256(bytes(record.recordType)) == keccak256(bytes("blood test panel")), "types must match");
 
-    
    }
 
    function test_UnverifiedPatientCannotRegisterRecord() public {
@@ -80,13 +79,12 @@ contract HealthRegistryTest is TestHelper {
 
    }
 
-
-   function test_PatientCannotRegisterTwice() public{
+   function test_PatientCannotRegisterTwice() public {
 
     bytes32 diffIdHash = sha256("diffIdHash");
-    
+
     vm.expectRevert(bytes("Already registered"));
-    
+
     vm.prank(patient);
 
     registry.registerUser(diffIdHash, IHealthRegistry.Role.Patient);
@@ -95,9 +93,7 @@ contract HealthRegistryTest is TestHelper {
 
     require(user.identityHash == identityHash, "og identity must remain ");
 
-    
    }
-
 
    function test_PatientCanUpdateIdentity() public {
 
@@ -119,7 +115,6 @@ contract HealthRegistryTest is TestHelper {
 
    }
 
-
    function test_NonAdminCannotVerifyPatient() public {
 
     vm.expectRevert(bytes("Only admin"));
@@ -138,11 +133,4 @@ contract HealthRegistryTest is TestHelper {
 
    }
 
-
-
-    
-
-
-
-    
 }

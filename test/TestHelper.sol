@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-// Hardhat test helpers: change the caller and check errors or events.
 interface Vm {
     struct Log {
         bytes32[] topics;

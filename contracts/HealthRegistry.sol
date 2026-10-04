@@ -7,7 +7,7 @@ contract HealthRegistry is IHealthRegistry {
     address public immutable admin;
     uint256 public nextRecordId = 1;
 
-    // Actual identity details and medical files stay off-chain.
+    // private data stays off-chain
     mapping(address => User) private users;
     mapping(uint256 => Record) private records;
 
@@ -36,7 +36,6 @@ contract HealthRegistry is IHealthRegistry {
         require(identityHash != bytes32(0), "Empty identity hash");
         require(role != Role.None, "Choose a role");
 
-        // Signing up does not automatically verify a patient or doctor.
         users[msg.sender] = User(identityHash, role, false);
         emit UserRegistered(msg.sender, role, identityHash);
     }
@@ -46,7 +45,7 @@ contract HealthRegistry is IHealthRegistry {
         require(identityHash != bytes32(0), "Empty identity hash");
 
         users[msg.sender].identityHash = identityHash;
-        // Changed identity details must be checked again by the admin.
+        // identity changes need verification again
         users[msg.sender].verified = false;
         emit IdentityUpdated(msg.sender, identityHash);
         emit VerificationChanged(msg.sender, false);
@@ -66,7 +65,7 @@ contract HealthRegistry is IHealthRegistry {
         require(bytes(recordType).length > 0, "Empty record type");
         require(bytes(recordType).length <= 64, "Record type too long");
 
-        uint256 recordId = nextRecordId;
+        uint256 recordId =nextRecordId;
         nextRecordId += 1;
         records[recordId] = Record(msg.sender, recordHash, recordType);
         emit RecordRegistered(recordId, msg.sender, recordHash, recordType);
@@ -94,6 +93,4 @@ contract HealthRegistry is IHealthRegistry {
         return users[account].role == role && users[account].verified;
     }
 
-    
-    
 }

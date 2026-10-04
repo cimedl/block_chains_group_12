@@ -4,7 +4,7 @@ pragma solidity ^0.8.28;
 import {IHealthRegistry} from "./interfaces/IHealthRegistry.sol";
 import {IConsentReward} from "./interfaces/IConsentReward.sol";
 
-// Simple reward points. They cannot be transferred or used to buy access.
+// reward points, no transfers
 contract ConsentReward is IConsentReward {
     IHealthRegistry public immutable registry;
     address public immutable admin;
@@ -29,7 +29,6 @@ contract ConsentReward is IConsentReward {
         admin = adminAddress;
     }
 
-    // P5 calls this once after deploying P2's ConsentManager.
     function setConsentManager(address manager) external {
         require(msg.sender == admin, "Only admin");
         require(consentManager == address(0), "Manager already set");
@@ -50,13 +49,13 @@ contract ConsentReward is IConsentReward {
         bool researcher = registry.isVerified(requester, IHealthRegistry.Role.Researcher);
         require(doctor || researcher, "Requester not verified");
 
-        // Renewing the same permission is allowed, but earns no extra points.
+        // no extra points for the same record and requester
         if (rewarded[recordId][requester]) {
             return false;
         }
 
         rewarded[recordId][requester] = true;
-        balanceOf[patient] += REWARD_AMOUNT;
+        balanceOf[patient]+= REWARD_AMOUNT;
         emit RewardGiven(patient, recordId, requester, REWARD_AMOUNT);
         return true;
     }

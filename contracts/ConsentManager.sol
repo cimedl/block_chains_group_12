@@ -3,7 +3,6 @@ pragma solidity ^0.8.20;
 import {IHealthRegistry} from "./interfaces/IHealthRegistry.sol";
 import {IConsentReward} from "./interfaces/IConsentReward.sol";
 
-
 contract ConsentManager {
     enum ReasonCode {
         NO_CONSENT,
@@ -44,7 +43,6 @@ contract ConsentManager {
         uint256 recordId
     );
 
-
     event ConsentRevoked(
         uint256 indexed grantId,
         address indexed patient,
@@ -52,12 +50,10 @@ contract ConsentManager {
         uint256 recordId
     );
 
-
     uint256 public currentGrantId = 1;
     uint256 public currentRequestId = 1;
     mapping(uint256 => ConsentRecord) public consentGrants;
     mapping(uint256 => mapping(address => uint256)) public latestGrantId;
-
 
     address public healthRegistry;
     address public consentReward;
@@ -91,7 +87,7 @@ contract ConsentManager {
             require(keccak256(bytes(category)) == keccak256(bytes(record.recordType)), "INVALID: Record category mismatch");
 
             uint256 start = block.timestamp;
-            uint256 end = start + (durationDays * 1 days);
+            uint256 end = start +(durationDays * 1 days);
 
             uint256 thisGrantId = currentGrantId;
 
@@ -106,6 +102,7 @@ contract ConsentManager {
                 revokedStatus: false
             });
 
+            // store first, then call reward
             consentGrants[thisGrantId] = newConsentRecord;
             latestGrantId[recordId][requester] = thisGrantId;
             currentGrantId++;
@@ -140,7 +137,6 @@ contract ConsentManager {
                 recordId
             );
     }
-
 
     function requestAccess(
         uint256 recordId,
@@ -236,7 +232,6 @@ contract ConsentManager {
             return;
         }
 
-
         if (grant.revokedStatus == true) {
             emit AccessDecision(
                 requestId,
@@ -274,7 +269,7 @@ contract ConsentManager {
             ReasonCode.GRANTED);
     }
 
-    // Used to check if the patient hasn't revoked access while the request for access was being processed
+    // receipt alone isn't enough
     function checkPermission(
         uint256 grantId,
         address requester,

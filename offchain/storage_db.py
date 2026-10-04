@@ -6,10 +6,9 @@ from typing import Optional
 
 
 class ServiceDatabase:
-    # record consumed_requests, ensure that the service can still defend against replay attacks after restarting.
     def __init__(self, db_path: str = "data/service_state.db", namespace: str = ""):
         self.db_path = db_path
-        self.namespace = namespace
+        self.namespace= namespace
         parent_dir = os.path.dirname(self.db_path)
         if parent_dir:
             os.makedirs(parent_dir, exist_ok=True)
@@ -75,6 +74,7 @@ class ServiceDatabase:
             return cursor.fetchone() is not None
 
     def mark_consumed(self, request_id: str, requester: str, record_id: int, challenge: str):
+        # claim once, even with concurrent requests
         with closing(self._get_connection()) as conn:
             try:
                 conn.execute("BEGIN IMMEDIATE")

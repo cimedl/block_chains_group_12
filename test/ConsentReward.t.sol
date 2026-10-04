@@ -18,7 +18,6 @@ contract RewardCallerStub {
     }
 }
 
-
 contract ConsentRewardTest is TestHelper {
     HealthRegistry registry;
     ConsentReward reward;
@@ -32,7 +31,6 @@ contract ConsentRewardTest is TestHelper {
 
     event RewardGiven(address indexed patient, uint256 indexed recordId, address indexed requester, uint256 amount);
     event ConsentManagerSet(address indexed manager);
-
 
     function setUp() public {
         registry = new HealthRegistry(address(this));
@@ -61,8 +59,7 @@ contract ConsentRewardTest is TestHelper {
         recordId = registry.registerRecord(fileHash,"blood test panel");
     }
 
-
-   function test_OnlyAdminCanSetManagerAndOnlyManagerCanReward() public{
+   function test_OnlyAdminCanSetManagerAndOnlyManagerCanReward() public {
 
     ConsentReward newReward = new ConsentReward(address(registry),address(this));
     RewardCallerStub newManager = new RewardCallerStub(newReward);
@@ -119,7 +116,6 @@ contract ConsentRewardTest is TestHelper {
 
    }
 
-   // Sharing the same blood panel with the same doctor should earn points only once.
    function test_PatientCannotGetRewardTwice() public {
 
     bool given = manager.callReward(recordId, doctor);
@@ -133,7 +129,6 @@ contract ConsentRewardTest is TestHelper {
     require(reward.balanceOf(patient) == 10, "points should stay the same");
     require(reward.rewarded(recordId,doctor) == true, "og reward should still be remembered");
 
-    // Sharing with a researcher is a separate permission and can earn its own points.
     require(reward.rewarded(recordId,researcher) == false, "researcher reward should not be used yet");
 
     bool researcherGiven = manager.callReward(recordId, researcher);

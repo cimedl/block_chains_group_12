@@ -1,15 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-
-
-
 import {HealthRegistry} from "../contracts/HealthRegistry.sol";
 import {ConsentReward} from "../contracts/ConsentReward.sol";
 import {ConsentManager} from "../contracts/ConsentManager.sol";
 import {IHealthRegistry} from "../contracts/interfaces/IHealthRegistry.sol";
 import {TestHelper} from "./TestHelper.sol";
-
 
 contract ConsentManagerTest is TestHelper {
     HealthRegistry registry;
@@ -27,9 +23,6 @@ contract ConsentManagerTest is TestHelper {
     event AccessDecision(uint256 indexed requestId, address indexed patient, address indexed requester,
         uint256 recordId, uint256 grantId, uint256 timestamp, bool allowed, ConsentManager.ReasonCode reason);
 
-
-
-    // Each test starts with a patient's blood panel and two verified doctors.
     function setUp() public {
         vm.warp(1000);
 
@@ -59,9 +52,7 @@ contract ConsentManagerTest is TestHelper {
         recordId = registry.registerRecord(fileHash,"blood test panel");
     }
 
-
-   // Sharing the blood panel gives this doctor access for a week; the patient keeps ownership.
-   function test_PatientCanGrantAccess() public{
+   function test_PatientCanGrantAccess() public {
 
     uint256 startTime = block.timestamp;
 
@@ -102,8 +93,6 @@ contract ConsentManagerTest is TestHelper {
 
    }
 
-
-   // Being a verified doctor does not let someone manage a patient's consent.
    function test_NonOwnerCannotGrantOrRevokeAccess() public {
 
     vm.expectRevert(bytes("UNAUTHORIZED: Not the record owner"));
@@ -132,9 +121,7 @@ contract ConsentManagerTest is TestHelper {
 
    }
 
-
-   // The project allows the patient to choose between 1 and 365 days of access.
-   function test_ConsentDurationLimits() public{
+   function test_ConsentDurationLimits() public {
 
     vm.expectRevert(bytes("INVALID: Duration must be 1=365 days"));
 
@@ -165,7 +152,6 @@ contract ConsentManagerTest is TestHelper {
 
     vm.prank(patient);
 
-    // Check the maximum duration with the second doctor.
     manager.grantAccess(recordId, "blood test panel",otherDoctor,365);
     uint256 longGrantId = manager.currentGrantId() - 1;
 
@@ -176,8 +162,6 @@ contract ConsentManagerTest is TestHelper {
 
    }
 
-   
-   // The audit trail must include the doctor's failed attempt as well as the later allowed request.
    function test_AccessRequestsAreLogged() public {
 
     require(manager.checkPermission(0,doctor,recordId) == false, "doctor should not have access without consent");
@@ -210,15 +194,11 @@ contract ConsentManagerTest is TestHelper {
     require(allowedRequestId == 2, "second request id must be 2");
     require(manager.currentRequestId() == 3, "next request id must be 3");
 
-    // Points reward sharing; the doctor does not spend them to read the panel.
     require(reward.balanceOf(patient) == 10, "allowed request should not change patient points");
     require(reward.balanceOf(doctor) == 0, "doctor should not need points for access");
 
    }
 
-
-
-   // Access ends at expiry. After renewal, the patient can still withdraw it immediately.
    function test_RevokedAndExpiredConsentBlocksAccess() public {
 
     uint256 startTime = block.timestamp;

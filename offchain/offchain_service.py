@@ -12,14 +12,8 @@ from crypto_utils import calculate_sha256, ensure_bytes32
 from encrypt_record import decrypt_record_bytes
 from storage_db import ServiceDatabase
 
-# Signature Verification
-# Integrity Check
-# Replay Prevention
-# Decryption
-
 
 def load_abi(contract_name: str, artifacts_dir: str = "artifacts/contracts") -> list:
-    """Load contract ABI from Hardhat build artifacts."""
     abi_path = os.path.join(artifacts_dir, f"{contract_name}.sol", f"{contract_name}.json")
     if not os.path.exists(abi_path):
         raise FileNotFoundError(f"ABI file not found: {abi_path}. Please run 'npx hardhat compile' first.")
@@ -27,7 +21,8 @@ def load_abi(contract_name: str, artifacts_dir: str = "artifacts/contracts") -> 
         artifact = json.load(f)
     return artifact["abi"]
 
-CONSUMED_REQUESTS = set() # Record the IDs of processed requests to prevent duplicate claims.
+
+CONSUMED_REQUESTS = set()
 
 
 class MedicalDataDeliveryService:
@@ -42,15 +37,11 @@ class MedicalDataDeliveryService:
         db_path: str = "service_state.db"
     ):
         self.w3 = web3_provider
-        
 
         self.data_dir = data_dir
-        
-
 
         self.chain_id = int(self.w3.eth.chain_id)
         self.namespace = str(self.chain_id) + ":" + Web3.to_checksum_address(consent_manager_address).lower()
-
 
         self.registry_namespace = str(self.chain_id) + ":" + Web3.to_checksum_address(health_registry_address).lower()
         self.db = ServiceDatabase(db_path, self.namespace)
@@ -58,23 +49,18 @@ class MedicalDataDeliveryService:
         reg_abi = health_registry_abi or load_abi("HealthRegistry")
         consent_abi = consent_manager_abi or load_abi("ConsentManager")
 
-        # Bind the smart contract
         self.registry = self.w3.eth.contract(
             address=Web3.to_checksum_address(health_registry_address),
             abi=reg_abi
         )
-
-
 
         self.consent_manager = self.w3.eth.contract(
             address=Web3.to_checksum_address(consent_manager_address),
             abi=consent_abi
         )
 
-    
-
     def check_consent(self, record_id: int, requester_address: str) -> bool:
-       
+
         record_id = self._uint256(record_id)
         requester = Web3.to_checksum_address(requester_address)
         grant_id = self.consent_manager.functions.latestGrantId(record_id, requester).call()
@@ -111,7 +97,7 @@ class MedicalDataDeliveryService:
         request_id = str(self._uint256(request_id))
         requester = Web3.to_checksum_address(requester_address)
         tx_hash = Web3.to_hex(ensure_bytes32(tx_hash))
-        expires_at = int(time.time()) + 300
+        expires_at = int(time.time())+ 300
         message = json.dumps({"operation": "deliver_medical_record", "chain_id": self.chain_id,
             "registry": self.registry.address.lower(), "manager": self.consent_manager.address.lower(),
             "record_id": str(record_id), "request_id": request_id, "requester": requester.lower(),
@@ -128,7 +114,7 @@ class MedicalDataDeliveryService:
                 raise PermissionError(f"Signature mismatch: {recovered} does not match {requester}")
         except Exception as e:
             raise PermissionError(f"Authentication failed: {str(e)}")
-        
+
     def request_record_delivery(
         self,
         record_id: int,
@@ -147,7 +133,6 @@ class MedicalDataDeliveryService:
         return record
 
     def _deliver_record(self, record_id, requester_address, signature, challenge_message, tx_hash, request_id):
-        # Verify authorization and deliver the decrypted record data.
         request_id = str(self._uint256(request_id))
         record_id = self._uint256(record_id)
         requester_address = Web3.to_checksum_address(requester_address)
@@ -156,7 +141,6 @@ class MedicalDataDeliveryService:
             raise PermissionError("Connected chain changed after service initialization.")
         self.verify_requester_identity(requester_address, signature, challenge_message)
 
-        # Replay check
         if self.db.is_consumed(request_id):
             raise PermissionError(f"Security Alert: Request ID {request_id} has already been consumed.")
 
@@ -164,13 +148,14 @@ class MedicalDataDeliveryService:
         if not receipt or receipt.get("status") != 1:
             raise ValueError("Transaction failed or receipt not found.")
 
+        # match the request to this manager's receipt
         events = []
         for event in self.consent_manager.events.AccessDecision().process_receipt(receipt, errors=DISCARD):
             if event["address"].lower() == self.consent_manager.address.lower():
                 events.append(event)
         if not events:
             raise ValueError("No AccessDecision event found in receipt.")
-        
+
         matches = []
         for event in events:
             if int(event["args"]["requestId"]) == int(request_id):
@@ -190,21 +175,18 @@ class MedicalDataDeliveryService:
         if len(matches) != 1:
             raise ValueError("Record ID does not match transaction receipt or decision is ambiguous.")
         decision = matches[0]
-        #if str(decision["requestId"]) != str(request_id):
         if int(decision["requestId"]) != int(request_id):
             raise ValueError("Request ID does not match transaction receipt.")
         if decision["requester"].lower() != requester_address.lower():
             raise PermissionError("Requester does not match on-chain receipt.")
-        #if decision["recordId"] != record_id:
         if int(decision["recordId"]) != int(record_id):
             raise ValueError("Record ID does not match transaction receipt.")
         if not decision["allowed"]:
             raise PermissionError(f"Access denied on-chain: {decision.get('reason')}")
 
-        #grant_id = decision.get("grantId")
         grant_id = int(decision["grantId"])
 
-        # Double check current consent status
+        # consent may be revoked or expired
         is_active = self.consent_manager.functions.checkPermission(
             grant_id,
             Web3.to_checksum_address(requester_address),
@@ -215,7 +197,6 @@ class MedicalDataDeliveryService:
 
         self.db.check_challenge(challenge_message, record_id, request_id, requester_address, tx_hash)
 
-        # File integrity check
         paths = self.db.get_record_file(self.registry_namespace, record_id)
         if paths is None:
             raise FileNotFoundError("No private file/key mapping registered for this record.")
@@ -241,6 +222,7 @@ class MedicalDataDeliveryService:
             raise PermissionError("Access receipt is no longer on the canonical chain.")
         if not self.consent_manager.functions.checkPermission(grant_id, requester_address, record_id).call():
             raise PermissionError("Consent is no longer active (revoked or expired).")
+        # claim the request before decryption to block replay
         self.db.mark_consumed(request_id, requester_address, record_id, challenge_message)
         try:
             record = decrypt_record_bytes(encrypted_bytes, key_file_path)
@@ -249,6 +231,3 @@ class MedicalDataDeliveryService:
             raise
         self.db.finish_delivery(request_id, "decrypted")
         return record
-
-
-    

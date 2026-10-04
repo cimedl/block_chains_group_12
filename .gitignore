@@ -1,4 +1,4 @@
-# Dependencies, build output and environments
+# dependencies, build output and environments
 node_modules/
 artifacts/
 cache/
@@ -7,7 +7,7 @@ dist/
 __pycache__/
 *.py[cod]
 
-# Private local runtime data, keys and secrets
+# local data, keys and secrets
 .local/
 data/secret.key
 data/*.enc
@@ -25,7 +25,7 @@ data/*.enc
 *~
 *.zip
 
-# Editor and tool metadata
+# editor and tool metadata
 .idea/
 .vscode/
 .codex/
@@ -34,18 +34,18 @@ data/*.enc
 .DS_Store
 Thumbs.db
 
-# Internal team documents, review tooling and merge history (not part of the submission)
+# internal team files
 /docs/
 /.githooks/
 /.gitattributes
 /test/AccessDecisionFixture.sol
 
-# Scripts: keep only the deployment script and the hashing helper used by the tests
+# keep the deployment and hashing scripts
 /scripts/*
 !/scripts/deploy.mjs
 !/scripts/hash_data.py
 
-# Results: keep only the files used in the report; all earlier runs and merge results stay local
+# keep the results used in the report
 /results/*
 !/results/test-results-all-tests-with-why-critical.csv
 !/results/solidity-unit-tests-output.txt

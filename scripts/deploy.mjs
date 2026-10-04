@@ -1,11 +1,10 @@
-// Local Hardhat deployment. Uses Node's built-in modules only.
 import { readFile, mkdir, writeFile, rename } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const rpcUrl = process.argv[2] ?? "http://127.0.0.1:8545";
-let rpcId = 1;
+let rpcId= 1;
 
 async function rpc(method, params = []) {
   const response = await fetch(rpcUrl, {
@@ -65,7 +64,7 @@ const reward = await deploy("ConsentReward", [registry.address, admin], admin);
 const manager = await deploy("ConsentManager", [registry.address, reward.address], admin);
 const wiring = await send(admin, await callData("setConsentManager(address)", [manager.address]), reward.address);
 
-// Verify the actual deployed wiring before publishing the local manifest.
+// check wiring before saving the deployment
 for (const [contract, getter, expected] of [
   [reward.address, "registry()", registry.address],
   [reward.address, "consentManager()", manager.address],
